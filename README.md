@@ -11,7 +11,7 @@ $dV_t = k(\theta - V_t)dt + \sigma_V \sqrt{V_t} dW_t^V,$
 
 and
 
-$d \lang W^S, W^V\rang_t = \rho dt$
+$d < W^S, W^V>_t = \rho dt$
 
 for $t \in [0,T]$, where
 - $r \geq 0$ is the interest rate.
