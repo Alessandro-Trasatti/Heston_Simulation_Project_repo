@@ -6,9 +6,13 @@ We are going to be dealing with one of the most popular stochstic volatility mod
 $\frac{dS_t}{S_t} = r dt + \sqrt{V_t}dW_t^S,$
 
 where
-![Variance equation](https://latex.codecogs.com/gif.latex?dV_t%20%3D%20k%28%5Ctheta%20-%20V_t%29dt%20&plus;%20%5Csigma_V%20%5Csqrt%7BV_t%7D%20dW_t%5EV%2C)
+
+$dV_t = k(\theta - V_t)dt + \sigma_V \sqrt{V_t} dW_t^V,$
+
 and
-![correlation](https://latex.codecogs.com/gif.latex?dW%5ES_t%20d%20W%5EV_t%20%3D%20%5Crho%20dt%2C)
+
+$d \lang W^S, W^V\rang_t = \rho dt$
+
 for $t \in [0,T]$, where
 - $r \geq 0$ is the interest rate.
 - $\{V_t\}_{t \in [0,T]}$ is the *variance process.*
