@@ -2,15 +2,11 @@
 
 ## Goal of the project
 We are going to be dealing with one of the most popular stochstic volatility models (*SV models*), the Heston model. We recall that the equation of the model under $\mathbb{P}$, *a risk neautral measure*, are
-$
-\begin{align}
-\begin{cases}
-&\frac{dS_t}{S_t} = r dt + \sqrt{V_t}dW_t^S,\\
-&dV_t = k(\theta - V_t)dt + \sigma_V \sqrt{V_t} dW_t^V,\\
-&d \lang W^S, W^V\rang_t = \rho dt,
-\end{cases}
-\end{align}
-$
+![Stock equation](https://latex.codecogs.com/gif.latex?%5Cfrac%7BdS_t%7D%7BS_t%7D%20%3D%20r%20dt%20&plus;%20%5Csqrt%7BV_t%7DdW_t%5ES%2C%5C%5C)
+where
+![Variance equation](https://latex.codecogs.com/gif.latex?dV_t%20%3D%20k%28%5Ctheta%20-%20V_t%29dt%20&plus;%20%5Csigma_V%20%5Csqrt%7BV_t%7D%20dW_t%5EV%2C)
+and
+![correlation](https://latex.codecogs.com/gif.latex?dW%5ES_t%20d%20W%5EV_t%20%3D%20%5Crho%20dt%2C)
 for $t \in [0,T]$, where
 - $r \geq 0$ is the interest rate.
 - $\{V_t\}_{t \in [0,T]}$ is the *variance process.*
