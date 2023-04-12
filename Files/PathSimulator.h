@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Model.h"
+#include "HestonModel.h"
 #include <vector>
 
-
 using Vector = std::vector<double>;
+using Matrix = std::vector<std::vector<double>>;
 
 class PathSimulator
 {
@@ -12,8 +12,8 @@ public:
 	virtual PathSimulator* clone() const = 0;
 
 	// 2 constructors with parameter
-	PathSimulator(const Model& model, const double& maturity, const size_t& size);
-	PathSimulator(const Model& model, const Vector& time_points);
+	PathSimulator(const HestonModel& model, const double& maturity, const size_t& size);
+	PathSimulator(const HestonModel& model, const Vector& time_points);
 
 	// copy constructor
 	PathSimulator(const PathSimulator& path_simulator);
@@ -23,16 +23,18 @@ public:
 
 	// destructor
 	virtual ~PathSimulator();
-
-	Vector path() const;
+	
+	// return the path of the spot and the vol, it is now a Matrix, path[k][0] = S_{t_k}, path[k][1] = V_{t_k}
+	Matrix path() const;
 
 	// useful getter
 	double expiry() const;
 
 protected:
-	virtual double next_step(const size_t& time_idx, const double& asset_price) const = 0;
+	//we now need the value of the vol to go to the next step
+	virtual Vector next_step(const size_t& time_idx, const double& asset_price, const double &vol) const = 0;
 
-	const Model* _model;
+	const HestonModel* _model;
 	Vector _time_points;
 };
 
@@ -40,9 +42,10 @@ class EulerPathSimulator : public PathSimulator
 {
 public:
 	EulerPathSimulator* clone() const override;
-	EulerPathSimulator(const Model& model, const double& maturity, const size_t& size);
-	EulerPathSimulator(const Model& model, const Vector& time_points);
+	EulerPathSimulator(const HestonModel& model, const double& maturity, const size_t& size);
+	EulerPathSimulator(const HestonModel& model, const Vector& time_points);
 
 private:
-	double next_step(const size_t& time_idx, const double& asset_price) const override;
+	//returns the vol and the spot
+	Vector next_step(const size_t& time_idx, const double& asset_price, const double &vol) const override;
 };

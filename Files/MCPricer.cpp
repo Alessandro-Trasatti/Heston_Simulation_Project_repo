@@ -39,7 +39,7 @@ double MCPricer::price() const
 	double price = 0.;
 	for (size_t sim_idx = 0; sim_idx < _number_sims; sim_idx++)
 	{
-		Vector path = _pathSimulator->path()[0];
+		Matrix path = _pathSimulator->path();
 		price += _payoff->payoff(path);
 	}
 	price /= (double)_number_sims;

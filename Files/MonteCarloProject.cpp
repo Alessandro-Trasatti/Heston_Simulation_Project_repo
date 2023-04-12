@@ -20,7 +20,7 @@ int main()
 	double vol_of_vol = 1.;            // sigma_V
 	double correlation = -0.9;           // rho
 
-	int n_simulations = 100;
+	int n_simulations = 1000;
 	Vector time_points = { 0., 2., 4., 6., 8., 10. };
 
 	//tests constructors class HestonModel and of the operator =
