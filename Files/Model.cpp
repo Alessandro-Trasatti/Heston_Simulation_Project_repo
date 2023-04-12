@@ -20,38 +20,6 @@ double Model::init_value() const
 	return _initial_value;
 }
 
-// Implementation of the methods for the BlackScholesModel class
-BlackScholesModel::BlackScholesModel(const double & initial_value, const double & drift, const double & volatility)
-	: Model(initial_value), _drift(drift), _volatility(volatility)
-{
-}
-BlackScholesModel::BlackScholesModel(const BlackScholesModel & model)
-	: Model(model), _drift(model._drift), _volatility(model._volatility)
-{
-}
-BlackScholesModel * BlackScholesModel::clone() const
-{
-	return new BlackScholesModel(*this);
-}
-BlackScholesModel & BlackScholesModel::operator=(const BlackScholesModel & model)
-{
-	if (this != &model)
-	{
-		Model::operator=(model);
-		_drift = model._drift;
-		_volatility = model._volatility;
-	}
-	return *this;
-}
-double BlackScholesModel::drift_term(const double & time, const double & asset_price) const
-{
-	return _drift * asset_price;
-}
-double BlackScholesModel::diffusion_term(const double & time, const double & asset_price) const
-{
-	return _volatility * asset_price;
-}
-
 // Implementation of the methods for the HestonModel class
 
 // THE FOLLOWING METHOD IS NOT RIGHT AND NEEDS TO BE CHANGED

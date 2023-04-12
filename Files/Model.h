@@ -32,32 +32,6 @@ protected:
 	double _initial_value;
 };
 
-class BlackScholesModel : public Model
-{
-public:
-	// Parameter constructor
-	BlackScholesModel(const double& initial_value, const double& drift, const double& volatility);
-
-	// Copy constructor
-	BlackScholesModel(const BlackScholesModel& model);
-
-	// Clone method
-	BlackScholesModel* clone() const override;
-
-	// Assignment operator
-	BlackScholesModel& operator=(const BlackScholesModel& model);
-
-	// Destructor
-	~BlackScholesModel() = default;
-
-	double drift_term(const double& time, const double& asset_price) const override;
-	double diffusion_term(const double& time, const double& asset_price) const override;
-
-private:
-	double _drift; // mu
-	double _volatility; // sigma
-};
-
 class HestonModel : public Model
 {
 public:
@@ -90,6 +64,10 @@ public:
 	double mean_reversion_level() const;
 	double vol_of_vol() const;
 	double correlation() const;
+
+	double drift_term(const double& time, const double& asset_price) const override;
+	double diffusion_term(const double& time, const double& asset_price) const override;
+
 private:
 	double _initial_spot; // S0
 	double _initial_variance; // V_0
