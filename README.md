@@ -46,4 +46,22 @@ Following Andersen's paper, the **Broadie-Kaya** scheme will be implemented. To 
 ## Directives
 It has to be a homework of 2-3 pages and the code **well commented**. The more explicit the better. In the homework the macrostructure of the code has to be described (for instance the classes used and their purpose, why some of them will be abstract etc.). The idea is to do this at most on one page. In the other two pages, we present the results found with the aid of plots as well and all the tests performed (for example for different choices of the model parameters).
 
-**If the code works well**, extra-points will be awarded to those who will do further tests on the sensitivity of the price with respect to model parameters (for instance its behaviour with respect to $\rho$ or with respect to $\sigma_V$ etc). 
+**If the code works well**, extra-points will be awarded to those who will do further tests on the sensitivity of the price with respect to model parameters (for instance its behaviour with respect to $\rho$ or with respect to $\sigma_V$ etc).
+
+## Structure of the code
+In our project we use a number of classes:
+- <code>HestonModel</code>
+- <code>PathSimulator</code>
+- Continue list;
+
+### Class <code>HestonModel</code>
+**Purpose of the class**: 
+The class has the objective to reproduce in code the HestonModel;
+
+**Structure of the class**:
+In the <code>public</code> part it presents the customary parameter constructor as well as the getter methods. Moreover we have methods that code the drift term and diffusion term both for the underlying asset process $\{S_t\}_t$ and the varaince process $\{V_t\}_t$, defined as <code>const</code> methods as they are not modifying the current object.
+In the <code>private</code> part we can find the attributes that code
+$$k, \theta, \sigma_V, \rho, S_0, V_0, r.$$
+
+### Class <code>PathSimulator</code>
+**Purpose of the class**:
