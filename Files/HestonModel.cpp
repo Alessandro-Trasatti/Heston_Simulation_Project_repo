@@ -1,4 +1,5 @@
 #include "HestonModel.h"
+#include <cmath> // Needed for mathematical functions like sqrt
 
 #
 HestonModel::HestonModel(const double& initial_spot, const double& initial_variance, const double& drift, const double& mean_reversion_speed, const double& mean_reversion_level, const double& vol_of_vol, const double& correlation)
@@ -37,31 +38,30 @@ double HestonModel::drift_term_spot(const double& asset_price) const
 {
     return _drift * asset_price;
 }
-double HestonModel::diffusion_term_spot(const double& asset_price, const double& vol) const
+double HestonModel::diffusion_term_spot(const double& asset_price, const double& variance) const
 {
-    if (vol < 0) {
-        std::cout << "negative vol" << std::endl;
-        return 0;
+    if (variance < 0) {
+        throw std::invalid_argument( "received negative value for the variance" );
     }
     else {
-        return std::sqrt(vol) * asset_price;
+        return sqrt(variance) * asset_price;
     }
 }
-double HestonModel::drift_term_vol(const double& asset_price) const
+double HestonModel::drift_term_variance(const double& variance) const
 {
-    return _mean_reversion_speed * (_mean_reversion_level - asset_price);
+    if(variance < 0){
+        throw std::invalid_argument( "received negative value for the variance" );
+    }
+    else{
+        return _mean_reversion_speed * (_mean_reversion_level - variance);
+    }
 }
-double HestonModel::diffusion_term_vol(const double& asset_price, const double &vol) const
+double HestonModel::diffusion_term_variance(const double& asset_price, const double &variance) const
 {
-    if (vol < 0) {
-        std::cout << "vol negative" << std::endl;
-        return 0;
+    if (variance < 0) {
+        throw std::invalid_argument( "received negative value for the variance" );
     }
     else {
-        return _vol_of_vol * std::sqrt(vol);
+        return _vol_of_vol * sqrt(variance);
     }
-}
-HestonModel* HestonModel::clone() const
-{
-    return new HestonModel(*this);
 }
