@@ -11,30 +11,34 @@ class PathSimulator
 public:
 	virtual PathSimulator* clone() const = 0;
 
-	// 2 constructors with parameter
+	// Two constructors with parameter
+
+	// Given a maturity and a size, which models the number of points, it creates a path evaluated on a grid of equispaced points between 0 and T
 	PathSimulator(const HestonModel& model, const double& maturity, const size_t& size);
+	// Creates a path evaluated on a grid constituted by the time points given as input
 	PathSimulator(const HestonModel& model, const Vector& time_points);
 
-	// copy constructor
+	// Copy constructor
 	PathSimulator(const PathSimulator& path_simulator);
 
 	// assignment operator
 	PathSimulator& operator=(const PathSimulator& path_simulator);
 
 	// destructor
-	virtual ~PathSimulator();
+	virtual ~PathSimulator() = default;
 	
-	// return the path of the spot and the vol, it is now a Matrix, path[k][0] = S_{t_k}, path[k][1] = V_{t_k}
+	// Returns the path of the spot and the of the vol; it is now a Matrix, where path[k][0] = S_{t_k} and path[k][1] = V_{t_k}
 	Matrix path() const;
 
-	// useful getter
+	// Useful getter
 	double expiry() const;
 
 protected:
-	//we now need the value of the vol to go to the next step
-	virtual Vector next_step(const size_t& time_idx, const double& asset_price, const double &vol) const = 0;
+	// Codes the way with which we move to the next step of a general (virtual) discretization scheme - returns the variance and the spot
+	virtual Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const = 0;
 
-	const HestonModel* _model;
+
+	const HestonModel _model;
 	Vector _time_points;
 };
 
@@ -46,6 +50,6 @@ public:
 	EulerPathSimulator(const HestonModel& model, const Vector& time_points);
 
 private:
-	//returns the vol and the spot
-	Vector next_step(const size_t& time_idx, const double& asset_price, const double &vol) const override;
+	//returns the variance and the spot. Here the Euler discretization scheme is chosen.
+	Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const override;
 };
