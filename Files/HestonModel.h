@@ -15,7 +15,8 @@ public:
          const double& mean_reversion_level,
          const double& vol_of_vol,
          const double& correlation);
-    
+    //Assignement operator
+    HestonModel& operator=(const HestonModel& model);
     // Getter methods
     double initial_spot() const;
     double initial_variance() const;

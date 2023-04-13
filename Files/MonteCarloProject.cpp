@@ -9,8 +9,6 @@ using Matrix = std::vector<std::vector<double>>;
 
 int main()
 {
-	std::cout << "Milano > Roma" << std::endl;
-
 	//Numerical values from the paper, Case 1
 	double initial_spot = 100;          // S_0  
 	double initial_variance = 0.2;      // V_0
@@ -34,7 +32,9 @@ int main()
 	double maturity = eps1.expiry();
 	Matrix path = eps1.path();
 
-	//Print of a trajectory of the spot
+	//Print of a trajectory of the spot, we can notice that the asset may become constant after few iterations, that's because in the truncated 
+	//Euler Scheme, the variance can become null and in this case the asset price is only incremented with the drift, that we chose null in this example.
+	//It is a flaw indicated in the article. 
 
 	for (int i(0); i < path.size(); i++) {
 		std::cout << path[i][0] << std::endl;

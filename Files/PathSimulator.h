@@ -38,7 +38,8 @@ protected:
 	virtual Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const = 0;
 
 
-	const HestonModel _model;
+	// If you put a const here you can't define an assignement operator and write "_model = path_simulator._model"
+	HestonModel _model;
 	Vector _time_points;
 };
 

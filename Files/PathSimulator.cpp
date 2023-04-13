@@ -24,7 +24,7 @@ PathSimulator & PathSimulator::operator=(const PathSimulator & path_simulator)
 {
 	if (this != &path_simulator)
 	{
-		_model = path_simulator._model; // FIX!
+		_model = path_simulator._model; // FIX! done
 		_time_points = path_simulator._time_points;
 	}
 	return *this;
@@ -103,8 +103,8 @@ Vector EulerPathSimulator::next_step(const size_t & time_idx, const double & ass
 	//sqrt(DT) * (W_{t_{k+1}} - W_{t_k}) with a new brownian independant
 	double delta_brownian_spot = std::sqrt(delta_time) * distribution(generator);
 
-	// CHECK!!! (REWRITE ALSO THE FOLLOWING COMMENT)
-	// + V(t_k, S_{t_k}) * sqrt(DT) * N(0,1)
+	// CHECK!!! (REWRITE ALSO THE FOLLOWING COMMENT) seems okay
+	// + V(t_k, S_{t_k}) * sqrt(DT) * rho * (W^1_{t_{k+1}} - W^1_{t_k}) + sqrt(1 - rho**2) * (W^2_{t_{k+1}} - W^2_{t_k})
 	next_asset_price += _model.diffusion_term_spot(asset_price, next_variance) * (_model.correlation() * delta_brownian_variance + std::sqrt(1 - _model.correlation() * _model.correlation()) * delta_brownian_spot);
 	next_values.push_back(next_asset_price);
 	next_values.push_back(next_variance);
