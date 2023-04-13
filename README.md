@@ -37,7 +37,7 @@ To this purpose, there are different approaches
 
 Once this is done, the task is to compare the price given by the semi-analytic method and by the Monte Carlo simulation. More specifically, we want to show that as $N$, the number of simulations increases, the price given by the Monte Carlo simulation converges to the price given by the semi-analytic method **for some choices of the parameters and for different strikes, $K$, and expiration dates, $T$**.
 ### Efficient Monte Carlo Simulation
-Following Andersen's paper, the **Broadie-Kaya** scheme will be implemented. To discretize the variance process we will use two different methods
+Following Andersen's paper, the **Broadie-Kaya** and the *Truncated Euler* schemes will be implemented. To discretize the variance process we will use two different methods
 <ol>
     <li>The TG method.</li>
     <li>The QE method.</li>
@@ -52,16 +52,77 @@ It has to be a homework of 2-3 pages and the code **well commented**. The more e
 In our project we use a number of classes:
 - <code>HestonModel</code>
 - <code>PathSimulator</code>
-- Continue list;
+- <code>EulerPathSimulator</code>
+- <code>Payoff</code>
+- <code>CALL_PUT</code>
+- <code>EuropeanOptionPayoff</code>
+- <code>MCPricer</code>
 
 ### Class <code>HestonModel</code>
 **Purpose of the class**: 
 The class has the objective to reproduce in code the HestonModel;
 
 **Structure of the class**:
-In the <code>public</code> part it presents the customary parameter constructor as well as the getter methods. Moreover we have methods that code the drift term and diffusion term both for the underlying asset process $\{S_t\}_t$ and the varaince process $\{V_t\}_t$, defined as <code>const</code> methods as they are not modifying the current object.
+In the <code>public</code> part it presents the customary parameter constructor as well as the getter methods. Moreover we have methods that code the drift term and diffusion term both for the underlying asset process $\{S_t\}_t$ and the varaince process $\{V_t\}_t$, defined as <code>const</code> methods as they are not modifying the current object, in those methods we throw an exception if the variance is negative and set it to zero if it's the case.
 In the <code>private</code> part we can find the attributes that code
 $$k, \theta, \sigma_V, \rho, S_0, V_0, r.$$
 
 ### Class <code>PathSimulator</code>
 **Purpose of the class**:
+
+The PathSimulator class is meant to give a general class with all the methods and attributs needed to deal with numerical schemes. It is an abstract class as it contains the clone method which is virtual pure, which is not restrictive as one must necessarily choose a particular scheme before doing anything else. Each specific scheme is meant to be a derived class of this one.
+
+**Structure of the class**:
+It contains as attributs a model <code>HestonModel _model</code>, systematically a HestonModel in our case for the sake of simplicity. It contains also a temporal grid <code>Vector _time_points</code>. Its methods allow us to get trajectories of the underlying, for instance:
+-the method <code> virtual Vector next_step </code> codes the way with which we move to the next step of a general (virtual) discretization scheme - returns the variance and the spot.
+-the method <code>Matrix path() const</code>, return one trajectory of the asset price and of the variance.
+
+### Class <code>EulerPathSimulator</code>
+**Purpose of the class**:
+Derived class from the <code>PathSimulator</code> one, meant to implement a general Truncated Euler Scheme for both the variance and the asset, for instance for the Heston Model it reads:
+
+$$S_{t_{k} + \Delta t} = S_{t_{k}} \, \left( r \Delta t + \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} G_1 \right)$$
+
+$$V_{t_{k} + \Delta t} = k(\theta - \max(V_{t_k},0)) \Delta t + \sigma_V \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} \left( \rho G_1 + \sqrt{1 - \rho^{2}} G_2 \right)$$
+
+Where $G_1, G_2$ are two independant centered reduced gaussians.
+The term "truncated" comes from the fact that we truncate the variance for zero when it becomes negative. In our case the truncation is done in the Class <code> HestonModel </code>, as precised above.
+
+**Structure of the class**:
+Two constructors and one clone are implemented as public methods. The relevant method is the private <code>Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const override</code> that implements one iteration from the instant <code>time_idx</code> to the next one one the grid, see Scheme above.
+
+### Class <code>Payoff</code>
+**Purpose of the class**:
+
+The purpose of this abstract class is to specify the payoff of an option, this class is meant to be inherited from, and the derived class will contain more informations about the option chosen.
+
+**Structure of the class**:
+This class contains only:
+-<code> virtual Payoff* clone() const = 0 </code>
+-<code> virtual double payoff(const Matrix& path) const = 0 </code>
+ 
+The clone method is always a pure virtual method, the second is virtual pure as well because one must knows the payoff precisely and hence re implement it in the derived classes.
+
+### Enum Class <code>CALL_PUT </code>
+**Purpose of the class**:
+This enum class is meant to be used in the next class <code> EuropeanOptionPayoff </code> to indicate if a vanilla option is a call or a put.
+
+### Class <code>EuropeanOptionPayoff</code>
+**Purpose of the class**:
+This class is a derived class from <code>Payoff</code>, it gives all the informations needed to compute the price of an European option.
+
+**Structure of the class**:
+This class implements the virtual pure method <code>payoff</code> and also contains two attributes:
+- CALL_PUT _call_put;
+- double _strike;
+
+### Class <code>MCPricer</code>
+**Purpose of the class**:
+The purpose of this class is to give the price of an option, with the relevant parameters as attributes.
+
+**Structure of the class**:
+The class contains the regular public methods (constructors, destructor, assignement operator) and also the method <code> double price() const</code> which returns the price of the option. Everything that is relevant for the pricing is set as private attributes:
+- <code> size_t _number_sims </code>
+- <code> const Payoff* _payoff </code>
+- <code> const PathSimulator* _pathSimulator </code>
+- <code> double _risk_free_rate </code>
