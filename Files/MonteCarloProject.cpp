@@ -51,9 +51,9 @@ int main()
 	//Pricing
 	MCPricer pricer(n_simulations, payoff, eps1, drift);
 	double price = pricer.price();
-
+	
 	std::cout << price << std::endl;
-
+	std::cin.get();
 	return 0;
 
 }

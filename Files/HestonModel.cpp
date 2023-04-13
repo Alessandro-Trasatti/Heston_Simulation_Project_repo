@@ -40,7 +40,7 @@ double HestonModel::drift_term_spot(const double& asset_price) const
 double HestonModel::diffusion_term_spot(const double& asset_price, const double& vol) const
 {
     if (vol < 0) {
-        std::cout << "negative vol" << std::endl;
+        //std::cout << "negative vol" << std::endl;
         return 0;
     }
     else {
@@ -54,7 +54,7 @@ double HestonModel::drift_term_vol(const double& asset_price) const
 double HestonModel::diffusion_term_vol(const double& asset_price, const double &vol) const
 {
     if (vol < 0) {
-        std::cout << "vol negative" << std::endl;
+        //std::cout << "vol negative" << std::endl;
         return 0;
     }
     else {
