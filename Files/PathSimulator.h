@@ -53,6 +53,17 @@ public:
 	EulerPathSimulatorModified(const HestonModel& model, const Vector& time_points);
 
 private:
-	//returns the variance and the spot. Here the Euler discretization scheme is chosen.
+	//returns the variance and the spot using the truncated Euler discretization scheme.
 	Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const override;
+};
+
+class BroadieKaya : public PathSimulator
+{
+public:
+	BroadieKaya* clone() const override;
+	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size);
+	BroadieKaya(const HestonModel& model, const Vector& time_points);
+private:
+	//returns the variance and the spot using the BroadieKaya discretization scheme.
+	Vector next_step(const size_t& time_idx, const double& asset_price, const double& variance) const override;
 };

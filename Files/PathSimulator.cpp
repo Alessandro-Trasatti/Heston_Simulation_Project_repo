@@ -112,3 +112,20 @@ Vector EulerPathSimulatorModified::next_step(const size_t & time_idx, const doub
 	next_values.push_back(next_variance);
 	return next_values;
 }
+
+BroadieKaya* BroadieKaya::clone() const
+{
+	return new BroadieKaya(*this);
+}
+
+// As the derived class doesn't add any attribute, the constructor is basically the same than the one of PathSimulator
+
+BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size)
+	: PathSimulator(model, maturity, size)
+{
+}
+
+BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points)
+	: PathSimulator(model, time_points)
+{
+}
