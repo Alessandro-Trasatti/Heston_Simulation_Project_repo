@@ -107,7 +107,7 @@ where $Z^{\perp}_V$ is a centered reduced gaussian independant of $Z_V$.
 Two constructors and one clone are implemented as public methods. The relevant method is the private <code>Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const override</code> that implements one iteration from the instant <code>time_idx</code> to the next one one the grid, see Scheme above.
 
 
-###Class <code> BroadieKaya </code>
+### Class <code> BroadieKaya </code>
 **Purpose of the class**:
 Derived class from the <code>PathSimulator</code> one, this class is meant to implement a BroadieKaya scheme. It will be used only for the HestonModel, for which case reads:
 
