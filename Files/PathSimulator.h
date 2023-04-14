@@ -2,6 +2,8 @@
 
 #include "HestonModel.h"
 #include <vector>
+#include <cmath>
+#include <iostream>
 
 using Vector = std::vector<double>;
 using Matrix = std::vector<std::vector<double>>;
@@ -43,12 +45,12 @@ protected:
 	Vector _time_points;
 };
 
-class EulerPathSimulator : public PathSimulator
+class EulerPathSimulatorModified : public PathSimulator
 {
 public:
-	EulerPathSimulator* clone() const override;
-	EulerPathSimulator(const HestonModel& model, const double& maturity, const size_t& size);
-	EulerPathSimulator(const HestonModel& model, const Vector& time_points);
+	EulerPathSimulatorModified* clone() const override;
+	EulerPathSimulatorModified(const HestonModel& model, const double& maturity, const size_t& size);
+	EulerPathSimulatorModified(const HestonModel& model, const Vector& time_points);
 
 private:
 	//returns the variance and the spot. Here the Euler discretization scheme is chosen.

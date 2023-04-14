@@ -19,7 +19,7 @@ int main()
 	double correlation = -0.9;           // rho
 
 	int n_simulations = 1000;
-	Vector time_points = { 0., 2., 4., 6., 8., 10. };
+	Vector time_points = { 0., 0.2, 0.4, 0.6, 0.8, 1.0 };
 
 	//tests constructors class HestonModel and of the operator =
 	HestonModel firstModel(initial_spot, initial_variance, drift, mean_reversion_speed, mean_reversion_level, vol_of_vol, correlation);
@@ -27,7 +27,7 @@ int main()
 	firstModel = testModel;
 
 	//Truncated Euler Scheme and tests of its methods;
-	EulerPathSimulator eps1(firstModel, time_points);
+	EulerPathSimulatorModified eps1(firstModel, time_points);
 
 	double maturity = eps1.expiry();
 	Matrix path = eps1.path();
