@@ -37,7 +37,7 @@ To this purpose, there are different approaches
 
 Once this is done, the task is to compare the price given by the semi-analytic method and by the Monte Carlo simulation. More specifically, we want to show that as $N$, the number of simulations increases, the price given by the Monte Carlo simulation converges to the price given by the semi-analytic method **for some choices of the parameters and for different strikes, $K$, and expiration dates, $T$**.
 ### Efficient Monte Carlo Simulation
-Following Andersen's paper, the **Broadie-Kaya** and the *Truncated Euler* schemes will be implemented. To discretize the variance process we will use two different methods
+Following Andersen's paper, the **Broadie-Kaya** and the **Truncated Euler** schemes will be implemented. To discretize the variance process we will use two different methods
 <ol>
     <li>The TG method.</li>
     <li>The QE method.</li>
