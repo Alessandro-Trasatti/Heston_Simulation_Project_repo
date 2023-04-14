@@ -109,11 +109,14 @@ Two constructors and one clone are implemented as public methods. The relevant m
 
 ### Class <code> BroadieKaya </code>
 **Purpose of the class**:
-Derived class from the <code>PathSimulator</code> one, this class is meant to implement a BroadieKaya scheme. It will be used only for the HestonModel, for which case reads:
+Derived class from the <code>PathSimulator</code> one, this class is meant to implement a BroadieKaya scheme. It will be used only for the HestonModel. In that case the scheme for the log asset is the following:
 
+$$X_{t_{k} + \Delta t} = X_{t_k} + \dfrac{\rho}{\sigma_{V}} (V_{t_k + \Delta t} - V_{t_{k}} - \kappa \theta \Delta _t) + (\dfrac{\kappa \rho}{\sigma_{V}} - \dfrac{1}{2}) \int\limits_{t}^{t+\Delta t} V(u) du + \sqrt{1 - \rho^2} \int\limits_{t}^{t+\Delta t} \sqrt{V(u)} dW(u)$$
+
+and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential.
 
 **Structure of the class**:
-
+On the contrary of the previous class <code> EulerPathSimulatorModified </code> we now have divide
   
 ### Class <code>Payoff</code>
 **Purpose of the class**:
