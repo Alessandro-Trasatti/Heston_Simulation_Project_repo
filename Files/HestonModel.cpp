@@ -54,8 +54,7 @@ double HestonModel::drift_term_spot(const double& asset_price) const
 double HestonModel::diffusion_term_spot(const double& asset_price, const double& variance) const
 {
     if (variance < 0) {
-        //throw std::invalid_argument("received negative value for the variance");
-        return 0;
+        throw std::invalid_argument("received negative value for the variance");
     }
     else {
         return sqrt(variance) * asset_price;
@@ -64,8 +63,7 @@ double HestonModel::diffusion_term_spot(const double& asset_price, const double&
 double HestonModel::drift_term_variance(const double& variance) const
 {
     if (variance < 0) {
-        //throw std::invalid_argument("received negative value for the variance");
-        return _mean_reversion_speed * _mean_reversion_level;
+        throw std::invalid_argument("received negative value for the variance");
     }
     else {
         return _mean_reversion_speed * (_mean_reversion_level - variance);
@@ -74,8 +72,7 @@ double HestonModel::drift_term_variance(const double& variance) const
 double HestonModel::diffusion_term_variance(const double& asset_price, const double& variance) const
 {
     if (variance < 0) {
-        //throw std::invalid_argument("received negative value for the variance");
-        return 0;
+        throw std::invalid_argument("received negative value for the variance");
     }
     else {
         return _vol_of_vol * sqrt(variance);
