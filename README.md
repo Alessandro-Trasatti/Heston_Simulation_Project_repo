@@ -63,7 +63,7 @@ In our project we use a number of classes:
 The class has the objective to reproduce in code the HestonModel;
 
 **Structure of the class**:
-In the <code>public</code> part it presents the customary parameter constructor as well as the getter methods. Moreover we have methods that code the drift term and diffusion term both for the underlying asset process $\{S_t\}_t$ and the varaince process $\{V_t\}_t$, defined as <code>const</code> methods as they are not modifying the current object, in those methods we throw an exception if the variance is negative and set it to zero if it's the case.
+In the <code>public</code> part it presents the customary parameter constructor as well as the getter methods. Moreover we have methods that code the drift term and diffusion term both for the underlying asset process $\{S_t\}_t$ and the varaince process $\{V_t\}_t$, defined as <code>const</code> methods as they are not modifying the current object, in those methods we throw an exception if the variance is negative.
 In the <code>private</code> part we can find the attributes that code
 $$k, \theta, \sigma_V, \rho, S_0, V_0, r.$$
 
@@ -77,16 +77,31 @@ It contains as attributs a model <code>HestonModel _model</code>, systematically
 -the method <code> virtual Vector next_step </code> codes the way with which we move to the next step of a general (virtual) discretization scheme - returns the variance and the spot.
 -the method <code>Matrix path() const</code>, return one trajectory of the asset price and of the variance.
 
-### Class <code>EulerPathSimulator</code>
+### Class <code>EulerPathSimulatorModified</code>
 **Purpose of the class**:
 Derived class from the <code>PathSimulator</code> one, meant to implement a general Truncated Euler Scheme for both the variance and the asset, for instance for the Heston Model it reads:
 
-$$S_{t_{k} + \Delta t} = S_{t_{k}} \, \left( r \Delta t + \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} G_1 \right)$$
+$$S_{t_{k} + \Delta t} = S_{t_{k}} \, \left( r \Delta t + \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} Z_S \right)$$
 
-$$V_{t_{k} + \Delta t} = k(\theta - \max(V_{t_k},0)) \Delta t + \sigma_V \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} \left( \rho G_1 + \sqrt{1 - \rho^{2}} G_2 \right)$$
+$$V_{t_{k} + \Delta t} = k(\theta - \max(V_{t_k},0)) \Delta t + \sigma_V \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} Z_V$$
 
-Where $G_1, G_2$ are two independant centered reduced gaussians.
-The term "truncated" comes from the fact that we truncate the variance for zero when it becomes negative. In our case the truncation is done in the Class <code> HestonModel </code>, as precised above.
+Where $Z_S,Z_V$ are two corrolated centered reduced gaussians, in pratical one can set: 
+
+$$ Z_S = \rho Z_V + \sqrt{1 - \rho^2} Z_{V}^{\perp} $$
+
+where $Z^{\perp}_V$ is a centered reduced gaussian independant of $Z_V$.
+
+The term "truncated" comes from the fact that we truncate the variance for zero when it becomes negative. In our case the truncation is done in the Class <code> HestonModel </code>, as precised above. However for the sake of numerical stability, the article advises to use the Euler Scheme on the logarithm of the asset price with the further difference that the variance is truncated to zero, to ensure that the variance process never goes below zero, hence applying Ito we use the following scheme:
+
+$$ X_{t_{k} + \Delta t} = X_{t_k} -\dfrac{1}{2} \max(V_{t_{k}},0) \Delta t + \sqrt{\max(V_{t_{k}},0)} \sqrt{\Delta_t} Z_X$$
+
+$$V_{t_{k} + \Delta t} = k(\theta - \max(V_{t_k},0)) \Delta t + \sigma_V \sqrt{\max(V_{t_k},0)} \sqrt{\Delta_t} Z_V$$
+
+with $X_t = ln(S_t)$, and where again $Z_X,Z_V$ are two corrolated centered reduced gaussians, in pratical one can set: 
+
+$$ Z_X = \rho Z_V + \sqrt{1 - \rho^2} Z_{V}^{\perp} $$
+
+where $Z^{\perp}_V$ is a centered reduced gaussian independant of $Z_V$.
 
 **Structure of the class**:
 Two constructors and one clone are implemented as public methods. The relevant method is the private <code>Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const override</code> that implements one iteration from the instant <code>time_idx</code> to the next one one the grid, see Scheme above.
