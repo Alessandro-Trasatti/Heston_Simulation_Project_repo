@@ -64,6 +64,7 @@ public:
 	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size);
 	BroadieKaya(const HestonModel& model, const Vector& time_points);
 private:
-	//returns the variance and the spot using the BroadieKaya discretization scheme.
+	// Returns the variance and the spot using the BroadieKaya discretization scheme.
+	double Truncature_Gaussian(const double&  variance);
 	Vector next_step(const size_t& time_idx, const double& asset_price, const double& variance) const override;
 };

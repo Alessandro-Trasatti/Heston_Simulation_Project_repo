@@ -3,7 +3,7 @@
 #include <chrono>
 #include <random>
 
-
+// Implementation of PathSimulator methods
 PathSimulator::PathSimulator(const HestonModel & model, const double & maturity, const size_t & size)
 	: _model(model) // Using the copy constructor of the class HestonModel
 {
@@ -55,7 +55,7 @@ double PathSimulator::expiry() const
 {
 	return _time_points[_time_points.size() - 1];
 }
-
+// Implementation of EulerPathSimulatorModified methods
 EulerPathSimulatorModified* EulerPathSimulatorModified::clone() const
 {
 	return new EulerPathSimulatorModified(*this);
@@ -112,7 +112,7 @@ Vector EulerPathSimulatorModified::next_step(const size_t & time_idx, const doub
 	next_values.push_back(next_variance);
 	return next_values;
 }
-
+// Implementation of BroadieKaye methods
 BroadieKaya* BroadieKaya::clone() const
 {
 	return new BroadieKaya(*this);
@@ -128,4 +128,24 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const
 BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points)
 	: PathSimulator(model, time_points)
 {
+}
+
+double BroadieKaya::Truncature_Gaussian(const double &variance)
+{
+    double theta = _model.mean_reversion_level();
+	double k = _model.mean_reversion_speed();
+	double sigma_v = _model.vol_of_vol();
+	double Delta_t = _time_points[1] - _time_points[0];
+	double discounting_factor = std::exp(-k * Delta_t);
+
+	// Write formula of m
+	double m = theta + (variance - theta) * discounting_factor;
+	// Write formula of s^2
+	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1- discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- discounting_factor) * (1- discounting_factor);
+	double psi = s_squared/(m * m);
+}
+
+Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price, const double &variance) const
+{
+    
 }
