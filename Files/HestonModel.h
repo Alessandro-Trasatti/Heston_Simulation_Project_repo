@@ -1,3 +1,4 @@
+#pragma once
 #ifndef HESTONMODEL_H
 #define HESTONMODEL_H
 

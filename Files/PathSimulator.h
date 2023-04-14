@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HestonModel.h"
+#include "MathTools.h"
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -63,8 +64,8 @@ public:
 	BroadieKaya* clone() const override;
 	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size);
 	BroadieKaya(const HestonModel& model, const Vector& time_points);
+	double truncature_Gaussian(const double& variance, int n_iterations_secant_method = 100);
 private:
 	// Returns the variance and the spot using the BroadieKaya discretization scheme.
-	double Truncature_Gaussian(const double&  variance);
 	Vector next_step(const size_t& time_idx, const double& asset_price, const double& variance) const override;
 };

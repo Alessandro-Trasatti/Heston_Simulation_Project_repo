@@ -1,5 +1,4 @@
 #include "HestonModel.h"
-#include <cmath> // Needed for mathematical functions like sqrt
 
 #
 HestonModel::HestonModel(const double& initial_spot, const double& initial_variance, const double& drift, const double& mean_reversion_speed, const double& mean_reversion_level, const double& vol_of_vol, const double& correlation)

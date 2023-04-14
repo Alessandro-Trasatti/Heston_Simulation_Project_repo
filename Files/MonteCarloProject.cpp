@@ -37,9 +37,16 @@ int main()
 	//It is a flaw indicated in the article. 
 
 	for (int i(0); i < path.size(); i++) {
-		std::cout << path[i][0] << std::endl;
+		//std::cout << path[i][0] << std::endl;
 	}
 
+	//BroadieKaya scheme and tests of its methods
+	BroadieKaya Bk1(firstModel, time_points);
+	
+	//test of the TG algorithm, we set the method in public to do the test
+	for (int v(0); v < 10; v++) {
+		std::cout << Bk1.truncature_Gaussian(0.1);
+	}
 	//Strike, in the article 70,100,140
 	double strike = 70;
 
@@ -52,7 +59,7 @@ int main()
 	MCPricer pricer(n_simulations, payoff, eps1, drift);
 	double price = pricer.price();
 	
-	std::cout << price << std::endl;
+	//std::cout << price << std::endl;
 	std::cin.get();
 	return 0;
 

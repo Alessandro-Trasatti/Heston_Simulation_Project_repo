@@ -130,7 +130,7 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points)
 {
 }
 
-double BroadieKaya::Truncature_Gaussian(const double &variance)
+double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations_secant_method)
 {
     double theta = _model.mean_reversion_level();
 	double k = _model.mean_reversion_speed();
@@ -143,9 +143,19 @@ double BroadieKaya::Truncature_Gaussian(const double &variance)
 	// Write formula of s^2
 	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1- discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- discounting_factor) * (1- discounting_factor);
 	double psi = s_squared/(m * m);
+	double r = secantMethod(n_iterations_secant_method, psi, eq_r);
+	double mu = m  * (r / (normalPDF(r) + r * normalCDF(r)));
+	double sigma_tg = std::sqrt(s_squared) / (std::sqrt(psi) * (normalPDF(r) + r * normalCDF(r)));
+
+	//Draw of a centered reduced gaussian
+	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+	std::normal_distribution<double> distribution(0., 1.);
+	double Z_V = distribution(generator);
+	return std::max(mu + sigma_tg * Z_V, 0.0);
 }
 
 Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price, const double &variance) const
 {
-    
+	Vector next_values;
+	return next_values;
 }
