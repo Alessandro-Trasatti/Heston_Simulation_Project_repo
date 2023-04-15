@@ -106,18 +106,34 @@ where $Z^{\perp}_V$ is a centered reduced gaussian independant of $Z_V$.
 **Structure of the class**:
 Two constructors and one clone are implemented as public methods. The relevant method is the private <code>Vector next_step(const size_t& time_idx, const double& asset_price, const double &variance) const override</code> that implements one iteration from the instant <code>time_idx</code> to the next one one the grid, see Scheme above.
 
-
 ### Class <code> BroadieKaya </code>
 **Purpose of the class**:
 Derived class from the <code>PathSimulator</code> one, this class is meant to implement a BroadieKaya scheme. It will be used only for the HestonModel. In that case the scheme for the log asset is the following:
 
 $$X_{t_{k} + \Delta t} = X_{t_k} + \dfrac{\rho}{\sigma_{V}} (V_{t_k + \Delta t} - V_{t_{k}} - \kappa \theta \Delta _t) + (\dfrac{\kappa \rho}{\sigma_{V}} - \dfrac{1}{2}) \int\limits_{t}^{t+\Delta t} V(u) du + \sqrt{1 - \rho^2} \int\limits_{t}^{t+\Delta t} \sqrt{V(u)} dW(u)$$
 
-and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential.
+and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential. **to be detailed**
 
 **Structure of the class**:
-On the contrary of the previous class <code> EulerPathSimulatorModified </code> we now have divide
-  
+On the contrary of the previous class <code> EulerPathSimulatorModified </code> we now have divided the step from $t$ to $t + \Delta t$ in few private methods:
+- <code> truncature_gaussian </code>
+- <code> quadratic_exponential </code>
+- <code> next_step</code>
+
+As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below)
+
+### Class <code> MathTools </code>
+
+**Purpose of the class**:
+This class is meant to be a toolbox of all the algorithms, and mathematical functions one needs in the methods to carry out the numerical schemes.
+
+**Structure of the class**:
+The class contains the following methods, all public:
+- <code> normalCDF(double x) </code> Standard normal distribution function
+- <code> normalPDF(double x) </code> Standard normal density function
+- <code> eq_r(double r, double psi) </code> eq_r is the function f such that f(r) = 0, satisfied by r a parameter needed in the method <code> BroadieKaya::truncature_gaussian</code>
+- <code> secantMethod(int n_iterations, double psi, std::function<double(double, double)> func, double precision = 0.01)</code> this function takes in input another function thanks to the package <code> functional </code> of <code> std </code> and carry out the secant root search algorithm. The algorithm stops either if we have reached the maximal number of iterations, argument <code>int n_iterations</code> or if the difference between two consecutives terms is low enough, argument <code>double precision</code>.
+
 ### Class <code>Payoff</code>
 **Purpose of the class**:
 
