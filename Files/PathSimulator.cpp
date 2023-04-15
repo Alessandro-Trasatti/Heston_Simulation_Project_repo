@@ -120,16 +120,20 @@ BroadieKaya* BroadieKaya::clone() const
 
 // As the derived class doesn't add any attribute, the constructor is basically the same than the one of PathSimulator
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size)
-	: PathSimulator(model, maturity, size)
+BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools)
+	: PathSimulator(model, maturity, size), _tools(tools)
 {
 }
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points)
-	: PathSimulator(model, time_points)
+BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools)
+	: PathSimulator(model, time_points), _tools(tools)
 {
 }
-
+/*
+double BroadieKaya::eq_r(double r, double psi, MathTools tools) {
+	return (r * tools.normalPDF(r)) + tools.normalCDF(r) * (1 + r * r) - (1 + psi) * (tools.normalPDF(r) + r * tools.normalCDF(r)) * (tools.normalPDF(r) + r * tools.normalCDF(r));
+}
+*/
 double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations_secant_method)
 {
     double theta = _model.mean_reversion_level();
@@ -143,9 +147,10 @@ double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations
 	// Write formula of s^2
 	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1- discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- discounting_factor) * (1- discounting_factor);
 	double psi = s_squared/(m * m);
-	double r = secantMethod(n_iterations_secant_method, psi, eq_r);
-	double mu = m  * (r / (normalPDF(r) + r * normalCDF(r)));
-	double sigma_tg = std::sqrt(s_squared) / (std::sqrt(psi) * (normalPDF(r) + r * normalCDF(r)));
+	auto eqr = std::bind(&MathTools::eq_r, _tools, _1, _2);
+	double r = _tools.secantMethod(n_iterations_secant_method, psi, eqr);
+	double mu = m  * (r / (_tools.normalPDF(r) + r * _tools.normalCDF(r)));
+	double sigma_tg = std::sqrt(s_squared) / (std::sqrt(psi) * (_tools.normalPDF(r) + r * _tools.normalCDF(r)));
 
 	//Draw of a centered reduced gaussian
 	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
