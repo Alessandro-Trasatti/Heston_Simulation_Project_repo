@@ -1,7 +1,5 @@
 #include "Payoff.h"
 
-#include <algorithm>
-
 EuropeanOptionPayoff * EuropeanOptionPayoff::clone() const
 {
 	return new EuropeanOptionPayoff(*this);

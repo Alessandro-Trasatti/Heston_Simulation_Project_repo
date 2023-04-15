@@ -1,8 +1,5 @@
 #include "PathSimulator.h"
 
-#include <chrono>
-#include <random>
-
 // Implementation of PathSimulator methods
 PathSimulator::PathSimulator(const HestonModel & model, const double & maturity, const size_t & size)
 	: _model(model) // Using the copy constructor of the class HestonModel
@@ -112,29 +109,26 @@ Vector EulerPathSimulatorModified::next_step(const size_t & time_idx, const doub
 	next_values.push_back(next_variance);
 	return next_values;
 }
+
 // Implementation of BroadieKaye methods
+// As the derived class doesn't add any attribute, the constructor is basically the same than the one of PathSimulator
+
 BroadieKaya* BroadieKaya::clone() const
 {
 	return new BroadieKaya(*this);
 }
 
-// As the derived class doesn't add any attribute, the constructor is basically the same than the one of PathSimulator
-
-BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools)
-	: PathSimulator(model, maturity, size), _tools(tools)
+BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools,const bool &tg)
+	: PathSimulator(model, maturity, size), _tools(tools), _tg(tg)
 {
 }
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools)
-	: PathSimulator(model, time_points), _tools(tools)
+BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools,const bool &tg)
+	: PathSimulator(model, time_points), _tools(tools), _tg(tg)
 {
 }
-/*
-double BroadieKaya::eq_r(double r, double psi, MathTools tools) {
-	return (r * tools.normalPDF(r)) + tools.normalCDF(r) * (1 + r * r) - (1 + psi) * (tools.normalPDF(r) + r * tools.normalCDF(r)) * (tools.normalPDF(r) + r * tools.normalCDF(r));
-}
-*/
-double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations_secant_method)
+
+double BroadieKaya::truncature_gaussian(const double &variance, int n_iterations_secant_method) const
 {
     double theta = _model.mean_reversion_level();
 	double k = _model.mean_reversion_speed();
@@ -142,9 +136,9 @@ double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations
 	double Delta_t = _time_points[1] - _time_points[0];
 	double discounting_factor = std::exp(-k * Delta_t);
 
-	// Write formula of m
+	// theta + (V - theta) * e^{-k Delta_t}
 	double m = theta + (variance - theta) * discounting_factor;
-	// Write formula of s^2
+	// ((V * sigma_v^2 e^{-k Delta_t}) / k) * (1 - e^{-k Delta_t}) + (theta * sigma_v^2) / (2 k) * (1- e^{-k Delta_t})^2
 	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1- discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- discounting_factor) * (1- discounting_factor);
 	double psi = s_squared/(m * m);
 	// Weird thing to store a function that we have to pass as an argument for the secant method.
@@ -152,7 +146,6 @@ double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations
 	double r = _tools.secantMethod(n_iterations_secant_method, psi, eqr);
 	double mu = m  * (r / (_tools.normalPDF(r) + r * _tools.normalCDF(r)));
 	double sigma_tg = std::sqrt(s_squared) / (std::sqrt(psi) * (_tools.normalPDF(r) + r * _tools.normalCDF(r)));
-
 	//Draw of a centered reduced gaussian
 	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 	std::normal_distribution<double> distribution(0., 1.);
@@ -160,8 +153,64 @@ double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations
 	return std::max(mu + sigma_tg * Z_V, 0.0);
 }
 
+double BroadieKaya::quadratic_exponential(const double& variance, const double &psi_threshold, int n_iterations_secant_method) const
+{
+	double next_variance;
+	double theta = _model.mean_reversion_level();
+	double k = _model.mean_reversion_speed();
+	double sigma_v = _model.vol_of_vol();
+	double Delta_t = _time_points[1] - _time_points[0];
+	double discounting_factor = std::exp(-k * Delta_t);
+
+	// theta + (V - theta) * e^{-k Delta_t}
+	double m = theta + (variance - theta) * discounting_factor;
+	// ((V * sigma_v^2 e^{-k Delta_t}) / k) * (1 - e^{-k Delta_t}) + (theta * sigma_v^2) / (2 k) * (1- e^{-k Delta_t})^2
+	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1 - discounting_factor) + (theta * sigma_v * sigma_v / (2 * k)) * (1 - discounting_factor) * (1 - discounting_factor);
+	// (s/m)^2
+	double psi = s_squared / (m * m);
+	if (psi < psi_threshold) {
+		// (2 / psi) - 1 + sqrt{(2/psi)} * sqrt{(2/psi) - 1}
+		double b_squared = (2 / psi) - 1 + std::sqrt(2 / psi) * std::sqrt((2 / psi) - 1);
+		// m / (1 + b^2)
+		double a = (m / (1 + b_squared));
+		std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+		std::normal_distribution<double> distribution(0., 1.);
+		double Z_V = distribution(generator);
+		next_variance = a * (std::sqrt(b_squared) + Z_V) * (std::sqrt(b_squared) + Z_V);
+	}
+	else {
+		// (psi - 1) / (psi + 1)
+		double p = (psi - 1) / (psi + 1);
+		// 2 / (m * (psi + 1))
+		double beta = 2 / (m * (psi + 1));
+		// Draw of a (0,1) uniform 
+		std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+		std::uniform_real_distribution<double> distribution(0., 1.);
+		double U_V = distribution(generator);
+		next_variance = (U_V < p) ? 0 : std::log((1 - p) / (1 - U_V));
+	}
+
+	return next_variance;
+}
+
 Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price, const double &variance) const
 {
 	Vector next_values;
+	double theta = _model.mean_reversion_level();
+	double k = _model.mean_reversion_speed();
+	double sigma_v = _model.vol_of_vol();
+	double rho = _model.correlation();
+	double Delta_t = _time_points[1] - _time_points[0];
+	//according to the attribute tg, we choose the scheme for the variance
+	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
+	double log_asset_price = std::log(asset_price);
+	// (rho / sigma_v) * (V_{t + Delta t} - V_t - k * theta * delta)
+	log_asset_price += (rho / sigma_v) * (next_variance - variance - k * theta * Delta_t);
+	// Delta t * (((k * rho) / sigma_v) - (1/2)) * int_t^{t+ Delta t} V_s ds
+	log_asset_price += ((k * rho) / sigma_v - 0.5) * _tools.trapezoidalMethod(variance, next_variance, Delta_t);
+	// sqrt(1 + rho^2) * int_{t}^{t + \Delta t} sqrt(V_s) dWs
+	log_asset_price += std::sqrt(1 - rho * rho) * _tools.WinerIntegral(variance, next_variance, Delta_t);
+	next_values.push_back(std::exp(log_asset_price));
+	next_values.push_back(next_variance);
 	return next_values;
 }

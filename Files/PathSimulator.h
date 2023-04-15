@@ -5,6 +5,8 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <chrono>
+#include <random>
 
 using namespace std::placeholders;
 using Vector = std::vector<double>;
@@ -63,14 +65,14 @@ class BroadieKaya : public PathSimulator
 {
 public:
 	BroadieKaya* clone() const override;
-	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools);
-	BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools);
-	double truncature_Gaussian(const double& variance, int n_iterations_secant_method = 100);
+	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg);
+	BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools, const bool &tg);
+	double truncature_gaussian(const double& variance, int n_iterations_secant_method = 10) const;
+	double quadratic_exponential(const double& variance, const double& psi_threshold = 1.5, int n_iterations_secant_method = 10) const;
 private:
 	// This attribute contains all the needed mathematical functions and algorithms to carry out the schemes.
 	MathTools _tools;
-	// // Function such that f(r) = 0
-	/*double eq_r(double r, double psi, MathTools tools);*/
+	bool _tg;
 	// Returns the variance and the spot using the BroadieKaya discretization scheme.
 	Vector next_step(const size_t& time_idx, const double& asset_price, const double& variance) const override;
 };

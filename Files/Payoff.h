@@ -1,5 +1,8 @@
 #pragma once
 #include <vector>
+#include <iostream>
+#include <algorithm>
+
 using Vector = std::vector<double>;
 using Matrix = std::vector<std::vector<double>>;
 
