@@ -147,6 +147,7 @@ double BroadieKaya::truncature_Gaussian(const double &variance, int n_iterations
 	// Write formula of s^2
 	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1- discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- discounting_factor) * (1- discounting_factor);
 	double psi = s_squared/(m * m);
+	// Weird thing to store a function that we have to pass as an argument for the secant method.
 	auto eqr = std::bind(&MathTools::eq_r, _tools, _1, _2);
 	double r = _tools.secantMethod(n_iterations_secant_method, psi, eqr);
 	double mu = m  * (r / (_tools.normalPDF(r) + r * _tools.normalCDF(r)));

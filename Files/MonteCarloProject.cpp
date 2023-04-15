@@ -45,10 +45,9 @@ int main()
 	BroadieKaya Bk1(firstModel, time_points, tools);
 	
 	//test of the TG algorithm, we set the method in public to do the test
-	for (int v(0); v < 10; v++) {
-		std::cout << Bk1.truncature_Gaussian(0.1);
-	}
+	std::cout << Bk1.truncature_Gaussian(0.1);
 	/*
+	*
 	//Strike, in the article 70,100,140
 	double strike = 70;
 
