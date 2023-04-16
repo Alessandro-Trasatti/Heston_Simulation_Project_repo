@@ -133,6 +133,8 @@ The class contains the following methods, all public:
 - <code> normalPDF(double x) </code> Standard normal density function
 - <code> eq_r(double r, double psi) </code> eq_r is the function f such that f(r) = 0, satisfied by r a parameter needed in the method <code> BroadieKaya::truncature_gaussian</code>
 - <code> secantMethod(int n_iterations, double psi, std::function<double(double, double)> func, double precision = 0.01)</code> this function takes in input another function thanks to the package <code> functional </code> of <code> std </code> and carry out the secant root search algorithm. The algorithm stops either if we have reached the maximal number of iterations, argument <code>int n_iterations</code> or if the difference between two consecutives terms is low enough, argument <code>double precision</code>.
+- <code> double trapezoidalMethod(double previous_x, double next_x, double delta, double gamma_1 = 0.5) const </code> This function approximates $\int\limits_{t}^{t+\Delta} V_s ds$ by $\Delta \left( \gamma_1 V_{t} + (1 - \gamma_1) \V_{t + \Delta}\right)$ where $\gamma_1 \in \[0,1]$.
+- <code> double WinerIntegral(double previous_x, double next_x, double delta, double gamma_1 = 0.5) const </code> This function approximates $\int\limits_{t}^{t+\Delta} \sqrt{V_s} dW_s$ with $V_s$ considered as non negative and deterministic. It returns: $\sqrt{\Delta} * Z * \sqrt{ \gamma_1 * V_{t} + (1 - \gamma_1) * V_{t+\Delta}}$ with $Z \sim \mathbf{N}(0,1)$
 
 ### Class <code>Payoff</code>
 **Purpose of the class**:
