@@ -32,6 +32,9 @@ double MathTools::secantMethod(int n_iterations, double psi, std::function<doubl
 
 double MathTools::trapezoidalMethod(double previous_x, double next_x, double delta, double gamma_1) const
 {
+    if (gamma_1 > 1 || gamma_1 < 0) {
+        throw "gamma must belong to [0,1]";
+    }
     return delta * (gamma_1 * previous_x + (1 - gamma_1) * next_x);
 }
 
@@ -39,6 +42,9 @@ double MathTools::WinerIntegral(double previous_x, double next_x, double delta, 
 {
     if (previous_x < 0 || next_x < 0) {
         throw std::invalid_argument("received negative value for the variance");
+    }
+    else if (gamma_1 > 1 || gamma_1 < 0) {
+        throw "gamma must belong to [0,1]";
     }
     else {
         std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
