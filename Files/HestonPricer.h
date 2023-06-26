@@ -1,3 +1,4 @@
+#pragma once
 #include "HestonModel.h"
 #include "Complex.h"
 #include "GaussLegendreQuadrature.h"
