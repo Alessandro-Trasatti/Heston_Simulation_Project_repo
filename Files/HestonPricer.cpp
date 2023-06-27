@@ -65,7 +65,7 @@ Complex AnalyticalHestonPricer :: func_g(const size_t & i, const double& omega) 
 
 Complex AnalyticalHestonPricer :: func_D(const size_t & i, const double & tau, const double & omega) const
 {
-    std:: cout << "In func_D entra\n\n";
+    //std:: cout << "In func_D entra\n\n";
     Complex tau_c(tau);
     Complex sigma_v(_model.vol_of_vol());
     Complex a = func_a(i, omega);
@@ -74,13 +74,13 @@ Complex AnalyticalHestonPricer :: func_D(const size_t & i, const double & tau, c
     Complex res = (a - b) * (Complex(1.) - Complex::exponential(Complex(-1.)* b*tau_c)) / 
                   (sigma_v*sigma_v * (Complex(1.) - g * Complex::exponential(Complex(-1.)* b*tau_c)));
     
-    std:: cout << "module in Func_D:" << res.module() << "\n\n";
+    //std:: cout << "module in Func_D:" << res.module() << "\n\n";
     return res;
 }
 
 Complex AnalyticalHestonPricer :: func_C(const size_t & i, const double & tau, const double & omega) const
 {
-    std:: cout << "In func_C entra\n\n";
+    //std:: cout << "In func_C entra\n\n";
     Complex first_addend(0, omega * _model.drift() * tau);
 
     Complex unit(1); //this is number one
@@ -90,19 +90,19 @@ Complex AnalyticalHestonPricer :: func_C(const size_t & i, const double & tau, c
     Complex second_addend = (func_a(i, omega) - func_b(i, omega)) * tau - 
                             Complex(2) * Complex :: logarithm(numerator.operator/(denominator));
 
-    std:: cout << "Division in func_C:" << numerator.operator/(denominator).module() << "\n";
+    //std:: cout << "Division in func_C:" << numerator.operator/(denominator).module() << "\n";
     Complex kappa(_model.mean_reversion_speed());
     Complex theta(_model.mean_reversion_level());
     Complex sigma_v(_model.vol_of_vol());
 
-    std:: cout << "module in Func_C: " << (first_addend + (kappa * theta) / (sigma_v * sigma_v) * second_addend).module() << "\n";
+    //std:: cout << "module in Func_C: " << (first_addend + (kappa * theta) / (sigma_v * sigma_v) * second_addend).module() << "\n";
     return first_addend + (kappa * theta) / (sigma_v * sigma_v) * second_addend;
 }
 
 Complex AnalyticalHestonPricer :: func_Phi(const size_t& i, const double& tau, const double& x, const double& V, const double& omega) const
 {
 
-    std:: cout << "In func_Phi entra\n\n";
+    //std:: cout << "In func_Phi entra\n\n";
 
     Complex exponent = func_C(i, tau, omega) + func_D(i, tau, omega) * Complex(V) + Complex(0, omega * x);
 
@@ -111,36 +111,36 @@ Complex AnalyticalHestonPricer :: func_Phi(const size_t& i, const double& tau, c
 
 double AnalyticalHestonPricer :: func_integrand(const size_t& i, const double& tau, const double& x, const double& V, const double& omega) const
 {
-    std :: cout << "\nIn Func_integrand entra\n";
+    //std :: cout << "\nIn Func_integrand entra\n";
     Complex exponent(0, -1 * omega * log(_strike));
     Complex integrand = (func_Phi(i, tau, x, V, omega) * Complex:: exponential(exponent)) / Complex(0, omega);
 
-    std:: cout << "Integrand_real_part: " << integrand.real_part() << "\n\n";
+    //std:: cout << "Integrand_real_part: " << integrand.real_part() << "\n\n";
     return integrand.real_part();
 }
 
 double AnalyticalHestonPricer :: func_P(const size_t& i, const double& tau, const double& x, const double& V) const
 {
-    std:: cout << "In Func_P entra\n\n";
+    //std:: cout << "In Func_P entra\n\n";
     //GaussLegendreQuadrature glq(_gauss_legendre_sample_size);
 
     GaussLegendreQuadrature glq; //La classe Gauss Legendre per ora è gia inizializzata
-    std::function<double(double)> func = [this, i, tau, x, V](double omega) {return func_integrand(i, tau, x, V, omega); };
+    //std::function<double(double)> func = [this, i, tau, x, V](double omega) {return func_integrand(i, tau, x, V, omega); };
     double integral = glq.integrate(func);
 
-    std:: cout <<  "Integral value:" << 0.5* (1. + integral / M_PI) << "\n\n";
+    //std:: cout <<  "Integral value:" << 0.5* (1. + integral / M_PI) << "\n\n";
     return 0.5* (1. + integral / M_PI);
 }
 
 double AnalyticalHestonPricer :: price() const
 {
-    std:: cout << "\n\nEccolo il prezzo:\n\n";
+    //std:: cout << "\n\nEccolo il prezzo:\n\n";
     double S_0 = _model.initial_spot();
     double V_0 = _model.initial_variance();
 
     double first_addend = S_0 * func_P(1 , _maturity, log(S_0), V_0);
-    //double second_addend = _strike * exp(-1 * _model.drift() * _maturity) * func_P(2, _maturity, S_0, V_0);
+    double second_addend = _strike * exp(-1 * _model.drift() * _maturity) * func_P(2, _maturity, log(S_0), V_0);
 
     std:: cout << "Risultato: ";
-    return first_addend; // - second_addend;
+    return first_addend - second_addend;
 }
