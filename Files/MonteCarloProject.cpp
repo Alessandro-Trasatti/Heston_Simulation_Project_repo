@@ -20,7 +20,7 @@ int main()
 	double correlation = -0.9;           // rho
 	double maturity = 1;                //T
 
-	int n_simulations = 10000;
+	int n_simulations = 500;
 
 	//Grid
 	Vector time_points;
@@ -38,7 +38,7 @@ int main()
 
 	//Truncated Euler Scheme and tests of its methods;
 	//EulerPathSimulatorModified eps1(firstModel, time_points);
-	EulerPathSimulatorModified eps1(firstModel, maturity, 365);
+	EulerPathSimulatorModified eps1(firstModel, maturity, 12);
 
 
 	maturity = eps1.expiry();
@@ -61,8 +61,8 @@ int main()
 	//BroadieKaya scheme and tests of its methods
 	//BroadieKaya Bk1(firstModel, time_points, tools, tg);
 	//BroadieKaya Bk2(firstModel, time_points, tools, !tg);
-	BroadieKaya Bk1(firstModel, maturity, 365, tools, tg);
-	BroadieKaya Bk2(firstModel, maturity, 365, tools, !tg);
+	BroadieKaya Bk1(firstModel, maturity, 12, tools, tg);
+	BroadieKaya Bk2(firstModel, maturity, 12, tools, !tg);
 
 	//test of the TG algorithm, we set the method in public to do the test
 	//std::cout << Bk1.truncature_gaussian(0.1) << std::endl;

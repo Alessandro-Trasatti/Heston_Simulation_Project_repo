@@ -132,6 +132,7 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const
 		_gamma_1 = gamma_1;
 		_gamma_2 = 1 - gamma_1;
 		_delta_t = _time_points[1] - _time_points[0];
+		std::cout << _delta_t << std::endl;
 		_k_0 = - model.correlation() * model.mean_reversion_level() * model.mean_reversion_speed() / model.vol_of_vol();
 		_k_1 = gamma_1 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) - model.correlation() / model.vol_of_vol();
 		_k_2 = _gamma_2 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) + model.correlation() / model.vol_of_vol();
@@ -151,7 +152,7 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, co
 		_gamma_1 = gamma_1;
 		_gamma_2 = 1 - gamma_1;
 		_delta_t = _time_points[1] - _time_points[0];
-		_k_0 = -model.correlation() * model.mean_reversion_level() * model.mean_reversion_speed() / model.vol_of_vol();
+		_k_0 = -_delta_t * model.correlation() * model.mean_reversion_level() * model.mean_reversion_speed() / model.vol_of_vol();
 		_k_1 = gamma_1 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) - model.correlation() / model.vol_of_vol();
 		_k_2 = _gamma_2 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) + model.correlation() / model.vol_of_vol();
 		_k_3 = gamma_1 * _delta_t * (1 - model.correlation() * model.correlation());
