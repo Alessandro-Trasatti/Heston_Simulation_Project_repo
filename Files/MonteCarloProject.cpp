@@ -1,5 +1,6 @@
 #include <iostream>
 #include "HestonModel.h"
+#include "HestonPricer.h"
 #include "PathSimulator.h"
 #include "Payoff.h"
 #include "MCPricer.h"
@@ -17,9 +18,9 @@ int main()
 	double mean_reversion_level = 0.04;  // theta
 	double vol_of_vol = 1.;            // sigma_V
 	double correlation = -0.9;           // rho
-	double maturity = 10;                //T
+	double maturity = 1;                //T
 
-	int n_simulations = 100;
+	int n_simulations = 10000;
 
 	//Grid
 	Vector time_points;
@@ -36,26 +37,32 @@ int main()
 	firstModel = testModel;
 
 	//Truncated Euler Scheme and tests of its methods;
-	EulerPathSimulatorModified eps1(firstModel, time_points);
+	//EulerPathSimulatorModified eps1(firstModel, time_points);
+	EulerPathSimulatorModified eps1(firstModel, maturity, 365);
+
 
 	maturity = eps1.expiry();
 	Matrix path = eps1.path();
 
+
 	//Print of a trajectory of the spot, we can notice that the asset may become constant after few iterations, that's because in the truncated 
 	//Euler Scheme, the variance can become null and in this case the asset price is only incremented with the drift, that we chose null in this example.
 	//It is a flaw indicated in the article. 
-
+	/*
 	std::cout << "trajectory of one asset using the Truncated Euler scheme" << std::endl;
 	for (int i(0); i < path.size(); i++) {
 		std::cout << path[i][0] << std::endl;
 	}
+	*/
 	//test class MathTools
 	MathTools tools;
 	bool tg = true;
 
 	//BroadieKaya scheme and tests of its methods
-	BroadieKaya Bk1(firstModel, time_points, tools, tg);
-	BroadieKaya Bk2(firstModel, time_points, tools, !tg);
+	//BroadieKaya Bk1(firstModel, time_points, tools, tg);
+	//BroadieKaya Bk2(firstModel, time_points, tools, !tg);
+	BroadieKaya Bk1(firstModel, maturity, 365, tools, tg);
+	BroadieKaya Bk2(firstModel, maturity, 365, tools, !tg);
 
 	//test of the TG algorithm, we set the method in public to do the test
 	//std::cout << Bk1.truncature_gaussian(0.1) << std::endl;
@@ -70,7 +77,7 @@ int main()
 	//However, with a frequency of approximatively (1/1000), it appears that if the time step delta is too small, the asset price goes to - infty,
 	//(as we carry out the scheme on the log, it means that the asset price reaches 0).
 	
-	std::cout << "trajectory of one asset using the TG-BroadieKaya scheme" << std::endl;
+	/*std::cout << "trajectory of one asset using the TG-BroadieKaya scheme" << std::endl;
 	for (int i(0); i < path_bk_1.size(); i++) {
 		std::cout << path_bk_1[i][0] << std::endl;
 	}
@@ -78,9 +85,9 @@ int main()
 	for (int i(0); i < path_bk_2.size(); i++) {
 		std::cout << path_bk_2[i][0] << std::endl;
 	}
-
+	*/
 	//Strike, in the article 70,100,140
-	double strike = 70;
+	double strike = 100;
 
 	//PayOff
 	enum CALL_PUT call;
@@ -102,6 +109,10 @@ int main()
 	std::cout << price_bk_1 << std::endl;
 	std::cout << "Price obtained with the QE-BroadieKaya scheme" << std::endl;
 	std::cout << price_bk_2 << std::endl;
+
+	//Test prices analytical
+	AnalyticalHestonPricer EdoaPricer(firstModel, strike, maturity, 32);
+	std::cout << EdoaPricer.price() << std::endl;
 	std::cin.get();
 	return 0;
 

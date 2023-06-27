@@ -198,18 +198,19 @@ Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price,
 	Vector next_values;
 	double theta = _model.mean_reversion_level();
 	double k = _model.mean_reversion_speed();
+	double r = _model.drift();
 	double sigma_v = _model.vol_of_vol();
 	double rho = _model.correlation();
-	double Delta_t = _time_points[1] - _time_points[0];
+	double delta_t = _time_points[1] - _time_points[0];
 	//according to the attribute tg, we choose the scheme for the variance
 	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
 	double log_asset_price = std::log(asset_price);
 	// (rho / sigma_v) * (V_{t + Delta t} - V_t - k * theta * delta)
-	log_asset_price += (rho / sigma_v) * (next_variance - variance - k * theta * Delta_t);
+	log_asset_price += r * delta_t + (rho / sigma_v) * (next_variance - variance - k * theta * delta_t);
 	// Delta t * (((k * rho) / sigma_v) - (1/2)) * int_t^{t+ Delta t} V_s ds
-	log_asset_price += ((k * rho) / sigma_v - 0.5) * _tools.trapezoidalMethod(variance, next_variance, Delta_t);
+	log_asset_price += ((k * rho) / sigma_v - 0.5) * _tools.trapezoidalMethod(variance, next_variance, delta_t);
 	// sqrt(1 + rho^2) * int_{t}^{t + \Delta t} sqrt(V_s) dWs
-	log_asset_price += std::sqrt(1 - rho * rho) * _tools.WinerIntegral(variance, next_variance, Delta_t);
+	log_asset_price += std::sqrt(1 - rho * rho) * _tools.WinerIntegral(variance, next_variance, delta_t);
 	next_values.push_back(std::exp(log_asset_price));
 	next_values.push_back(next_variance);
 	return next_values;
