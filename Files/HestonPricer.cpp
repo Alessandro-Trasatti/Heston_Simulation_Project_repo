@@ -125,7 +125,7 @@ double AnalyticalHestonPricer :: func_P(const size_t& i, const double& tau, cons
     //GaussLegendreQuadrature glq(_gauss_legendre_sample_size);
 
     GaussLegendreQuadrature glq; //La classe Gauss Legendre per ora è gia inizializzata
-    //std::function<double(double)> func = [this, i, tau, x, V](double omega) {return func_integrand(i, tau, x, V, omega); };
+    std::function<double(double)> func = [this, i, tau, x, V](double omega) {return func_integrand(i, tau, x, V, omega); };
     double integral = glq.integrate(func);
 
     //std:: cout <<  "Integral value:" << 0.5* (1. + integral / M_PI) << "\n\n";
