@@ -31,10 +31,12 @@ double MathTools::secantMethod(int n_iterations, double psi, std::function<doubl
 }
 
 double MathTools::trapezoidalMethod(double previous_x, double next_x, double delta, double gamma_1) const
-{
+{   
+    /* to speed up the process, we don't control gamma here
     if (gamma_1 > 1 || gamma_1 < 0) {
         throw "gamma must belong to [0,1]";
     }
+    */
     return delta * (gamma_1 * previous_x + (1 - gamma_1) * next_x);
 }
 
@@ -53,4 +55,9 @@ double MathTools::WinerIntegral(double previous_x, double next_x, double delta, 
         return delta_brownian * std::sqrt(gamma_1 * previous_x + (1 - gamma_1) * next_x);
     }
 
+}
+
+double MathTools::binomialcoefficient(const int& n, const int& k)
+{
+    return 0.0;
 }
