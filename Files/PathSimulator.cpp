@@ -122,7 +122,7 @@ BroadieKaya* BroadieKaya::clone() const
 	return new BroadieKaya(*this);
 }
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg, const double &gamma_1)
+BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg, const double &gamma_1, const bool &is_log)
 	: PathSimulator(model, maturity, size), _tools(tools), _tg(tg)
 {
 	if (gamma_1 > 1 || gamma_1 < 0) {
@@ -139,10 +139,11 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const
 		_k_3 = gamma_1 * _delta_t * (1 - model.correlation() * model.correlation());
 		_k_4 = _gamma_2 * _delta_t * (1 - model.correlation() * model.correlation());
 		_r = model.drift();
+		_is_log = is_log;
 	}
 }
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools,const bool &tg, const double& gamma_1)
+BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools,const bool &tg, const double& gamma_1, const bool& is_log)
 	: PathSimulator(model, time_points), _tools(tools), _tg(tg)
 {
 	if (gamma_1 > 1 || gamma_1 < 0) {
@@ -158,6 +159,7 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, co
 		_k_3 = gamma_1 * _delta_t * (1 - model.correlation() * model.correlation());
 		_k_4 = _gamma_2 * _delta_t * (1 - model.correlation() * model.correlation());
 		_r = model.drift();
+		_is_log = is_log;
 	}
 }
 

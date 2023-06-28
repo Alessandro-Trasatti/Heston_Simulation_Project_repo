@@ -65,8 +65,8 @@ class BroadieKaya : public PathSimulator
 {
 public:
 	BroadieKaya* clone() const override;
-	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg, const double &gamma_1 = 0.5);
-	BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools, const bool &tg, const double &gamma_1 = 0.5);
+	BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg, const double &gamma_1 = 0.5, const bool &is_log = true);
+	BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools, const bool &tg, const double &gamma_1 = 0.5, const bool &is_log = true);
 	double truncature_gaussian(const double& variance, int n_iterations_secant_method = 10) const;
 	double quadratic_exponential(const double& variance, const double& psi_threshold = 1.5, int n_iterations_secant_method = 10) const;
 private:
@@ -82,6 +82,7 @@ private:
 	double _k_4;
 	double _delta_t;
 	double _r;
+	bool _is_log;
 	// Returns the variance and the spot using the BroadieKaya discretization scheme.
 	Vector next_step(const size_t& time_idx, const double& asset_price, const double& variance) const override;
 };
