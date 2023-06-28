@@ -225,13 +225,14 @@ double BroadieKaya::quadratic_exponential(const double& variance, const double &
 
 	return next_variance;
 }
-
+/*
 Vector BroadieKaya::next_step(const size_t& time_idx, const double& asset_price, const double& variance) const
 {
 	Vector next_values;
 	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 	std::normal_distribution<double> distribution(0., 1.);
 	//according to the attribute tg, we choose the scheme for the variance
+	std::cout << _delta_t << std::endl;
 	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
 	double log_asset_price = std::log(asset_price);
 	log_asset_price += _k_0 + _k_1 * variance + _k_2 * next_variance + std::sqrt(_k_3 * variance + _k_4 * next_variance) * distribution(generator);
@@ -239,8 +240,8 @@ Vector BroadieKaya::next_step(const size_t& time_idx, const double& asset_price,
 	next_values.push_back(next_variance);
 	return next_values;
 }
+*/
 
-/*
 Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price, const double &variance) const
 {
 	Vector next_values;
@@ -250,6 +251,7 @@ Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price,
 	double sigma_v = _model.vol_of_vol();
 	double rho = _model.correlation();
 	double delta_t = _time_points[1] - _time_points[0];
+
 	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 	std::normal_distribution<double> distribution(0., 1.);
 	//according to the attribute tg, we choose the scheme for the variance
@@ -262,8 +264,8 @@ Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price,
 	log_asset_price += ((k * rho) / sigma_v - 0.5) * integrale_var;
 	// sqrt(1 + rho^2) * int_{t}^{t + \Delta t} sqrt(V_s) dWs
 	log_asset_price += std::sqrt(1 - (rho * rho)) * std::sqrt(integrale_var) * distribution(generator);
+
 	next_values.push_back(std::exp(log_asset_price));
 	next_values.push_back(next_variance);
 	return next_values;
 }
-*/
