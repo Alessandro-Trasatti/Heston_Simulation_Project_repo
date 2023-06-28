@@ -51,12 +51,19 @@ It has to be a homework of 2-3 pages and the code **well commented**. The more e
 ## Structure of the code
 In our project we use a number of classes:
 - <code>HestonModel</code>
+
+**MonteCarlo method**
 - <code>PathSimulator</code>
 - <code>EulerPathSimulator</code>
 - <code>Payoff</code>
 - <code>CALL_PUT</code>
 - <code>EuropeanOptionPayoff</code>
 - <code>MCPricer</code>
+
+**Semi analytic method**
+- <code>Complex </code>
+- <code>GaussLegendreQuadrature </code>
+- <code>HestonPricer </code>
 
 ### Class <code>HestonModel</code>
 **Purpose of the class**: 
@@ -67,6 +74,8 @@ In the <code>public</code> part it presents the customary parameter constructor 
 In the <code>private</code> part we can find the attributes that code
 $$k, \theta, \sigma_V, \rho, S_0, V_0, r.$$
 
+
+Below we describe the classes used in the implementation of the MonteCarlo method for calculating the price of Call and Put options
 ### Class <code>PathSimulator</code>
 **Purpose of the class**:
 
@@ -110,7 +119,9 @@ Two constructors and one clone are implemented as public methods. The relevant m
 **Purpose of the class**:
 Derived class from the <code>PathSimulator</code> one, this class is meant to implement a BroadieKaya scheme. It will be used only for the HestonModel. In that case the scheme for the log asset is the following:
 
-$$X_{t_{k} + \Delta t} = X_{t_k} + \dfrac{\rho}{\sigma_{V}} (V_{t_k + \Delta t} - V_{t_{k}} - \kappa \theta \Delta _t) + (\dfrac{\kappa \rho}{\sigma_{V}} - \dfrac{1}{2}) \int\limits_{t}^{t+\Delta t} V(u) du + \sqrt{1 - \rho^2} \int\limits_{t}^{t+\Delta t} \sqrt{V(u)} dW(u)$$
+$$ X_{t_{k} + \Delta t} = X_{t_{k}} + \dfrac{\rho}{\sigma_{V}} (V_{t_k + \Delta t} - V_{t_{k}} - \kappa \theta \Delta _t) + $$
+
+$$ + (\dfrac{\kappa \rho}{\sigma_{V}} -\dfrac{1}{2}) \int\limits_{t}^{t+\Delta t} V(u) du + \sqrt{1 - \rho^2} \int\limits_{t}^{t+\Delta t} \sqrt{V(u)} dW(u) $$
 
 and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential. **to be detailed**
 
@@ -133,7 +144,7 @@ The class contains the following methods, all public:
 - <code> normalPDF(double x) </code> Standard normal density function
 - <code> eq_r(double r, double psi) </code> eq_r is the function f such that f(r) = 0, satisfied by r a parameter needed in the method <code> BroadieKaya::truncature_gaussian</code>
 - <code> secantMethod(int n_iterations, double psi, std::function<double(double, double)> func, double precision = 0.01)</code> this function takes in input another function thanks to the package <code> functional </code> of <code> std </code> and carry out the secant root search algorithm. The algorithm stops either if we have reached the maximal number of iterations, argument <code>int n_iterations</code> or if the difference between two consecutives terms is low enough, argument <code>double precision</code>.
-- <code> double trapezoidalMethod(double previous_x, double next_x, double delta, double gamma_1 = 0.5) const </code> This function approximates $\int\limits_{t}^{t+\Delta} V_s ds$ by $\Delta \left( \gamma_1 V_{t} + (1 - \gamma_1) \V_{t + \Delta}\right)$ where $\gamma_1 \in \[0,1]$.
+- <code> double trapezoidalMethod(double previous_x, double next_x, double delta, double gamma_1 = 0.5) const </code> This function approximates $\int\limits_{t}^{t+\Delta} V_s ds$ by $\Delta \left( \gamma_1 V_{t} + (1 - \gamma_1) V_{t + \Delta}\right)$ where $\gamma_1 \in \[0,1]$.
 - <code> double WinerIntegral(double previous_x, double next_x, double delta, double gamma_1 = 0.5) const </code> This function approximates $\int\limits_{t}^{t+\Delta} \sqrt{V_s} dW_s$ with $V_s$ considered as non negative and deterministic. It returns: $\sqrt{\Delta} * Z * \sqrt{ \gamma_1 * V_{t} + (1 - \gamma_1) * V_{t+\Delta}}$ with $Z \sim \mathbf{N}(0,1)$
 
 ### Class <code>Payoff</code>
@@ -171,3 +182,52 @@ The class contains the regular public methods (constructors, destructor, assigne
 - <code> const Payoff* _payoff </code>
 - <code> const PathSimulator* _pathSimulator </code>
 - <code> double _risk_free_rate </code>
+
+
+Now we explain the classes implemented in the code to obtain the price of Call and Put option using the semi analytic formula. We based our code on the exam of 2021/2022, where we completed the missing parts.
+
+Let us remember that the task is to compute the price of a Call option using the following formula
+
+$$C(S_0, V_0, K) = S_0 P_1 - K e^{-rT} P_2.  $$
+
+For $i=1, 2 $, $P_i$ is given by 
+
+$$P_i = \frac{1}{2} + \frac{1}{2 \pi} \int_{\omega = -\infty}^{\infty} \mathcal{R} \left[ \frac{\phi_i(T, ln(S_0), V_0, \omega) e^{-j \omega ln(K)}}{j \omega} \right] d \omega,$$
+
+where $\mathcal{R}(z)$ is the real part of a complex number $z$. The explicit expression of the other terms of the formula are given in the exam 2021/2022 which we enclose with the project.
+
+### Class <code>Complex</code>
+
+**Purpose of the class:**
+As we work with complex numbers we need a class that simulate a complex number and its properties, in fact the main attributes of this class are represented by the variable real part and the variable imaginary part. Moreover there are methods to compute properties like module, argument and methods able to simulate the operations with another complex number. 
+
+**Structure of the class:**
+In addition to getters and the constructor with parameters, there are the methods to simulate an operation between two complex numbers like: 
+- <code> Complex operator+(const Complex& complex) </code>
+- <code> Complex operator-(const Complex& complex) </code>
+- <code> Complex operator*(const Complex& complex) </code>
+- <code> Complex operator/(const Complex& complex) </code>
+
+
+There are also three static methods that simulate an exponential, logarithmic or square root transformation of a complex number:
+- <code> static Complex exponential(const Complex& complex) </code>
+- <code> static Complex logarithm(const Complex& complex) </code>
+- <code> static Complex square_root(const Complex& complex) </code>
+
+
+Using "static" before a method means that this method is a class method and not a method of the object. So, this has not access to the pointer this. It works like a global method.
+
+
+### Class <code>GaussLegendreQuadrature</code>
+
+**Purpose of the class:**
+We have seen that to compute the Call option we need to compute an integral. So, we need a class able to approximate this integral. Obviously, there are several ways to approximate an integral, but in our case we use the Gauss-Legendre quadrature formulas. 
+
+
+
+
+
+
+
+
+
