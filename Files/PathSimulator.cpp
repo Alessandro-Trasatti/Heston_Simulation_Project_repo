@@ -225,7 +225,7 @@ double BroadieKaya::quadratic_exponential(const double& variance, const double &
 
 	return next_variance;
 }
-/*
+
 Vector BroadieKaya::next_step(const size_t& time_idx, const double& asset_price, const double& variance) const
 {
 	Vector next_values;
@@ -236,12 +236,13 @@ Vector BroadieKaya::next_step(const size_t& time_idx, const double& asset_price,
 	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
 	double log_asset_price = std::log(asset_price);
 	log_asset_price += _k_0 + _k_1 * variance + _k_2 * next_variance + std::sqrt(_k_3 * variance + _k_4 * next_variance) * distribution(generator);
-	next_values.push_back(std::exp(log_asset_price));
+	/*next_values.push_back(std::exp(log_asset_price));*/
+	next_values.push_back(log_asset_price);
 	next_values.push_back(next_variance);
 	return next_values;
 }
-*/
 
+/*
 Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price, const double &variance) const
 {
 	Vector next_values;
@@ -269,3 +270,4 @@ Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price,
 	next_values.push_back(next_variance);
 	return next_values;
 }
+*/
