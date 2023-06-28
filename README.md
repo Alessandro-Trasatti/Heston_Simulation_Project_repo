@@ -64,6 +64,7 @@ In our project we use a number of classes:
 - <code>Complex </code>
 - <code>GaussLegendreQuadrature </code>
 - <code>HestonPricer </code>
+- <code>AnalyticalHestonPricer </code>
 
 ### Class <code>HestonModel</code>
 **Purpose of the class**: 
@@ -221,7 +222,67 @@ Using "static" before a method means that this method is a class method and not 
 ### Class <code>GaussLegendreQuadrature</code>
 
 **Purpose of the class:**
-We have seen that to compute the Call option we need to compute an integral. So, we need a class able to approximate this integral. Obviously, there are several ways to approximate an integral, but in our case we use the Gauss-Legendre quadrature formulas. 
+We have seen that to compute the Call option we need to compute an integral. So, we need a class able to approximate this integral. Obviously, there are several ways to approximate an integral, but in our case we use the Gauss-Legendre quadrature formulas.
+For an integer $ n > 2$ and for all function $g$ defined on $[-1,  1]$, we can approximate his integral on this interval by a linear combination of weights multiplying $g$ valued in some points $(x_i)_{i=1, \dots, n}$:
+
+$$\int_{-1}^{1} g(x) dx \approx \sum_{i=1}^{n} w_i g(x_i),$$
+
+where the weights $(w_i)_{i=1, \dots,n}$ and the abscissas $(x_i)_{i=1, \dots,n}$ are uniquely defined by the value of $n$.
+In our case we want to integrate a function defined on the interval $(-\infty, +\infty)$.
+
+$$\int_{-\infty}^{+\infty} f(\omega) d \omega.$$
+
+Via a change of variable, $\omega = \frac{x}{1 - x^2}$, we obtain
+
+$$\int_{-\infty}^{+\infty} f(\omega) d \omega = \int_{-1}^{1} g(x) dx \approx \sum_{i=1}^{n} w_i g(x_i), $$
+
+where 
+
+$$ g(x) = f(\frac{x}{1 - x^2}) \frac{1 + x^2}{(1- x^2)^2}.$$
+
+**Structure of the class:**
+
+We have three different attributes:
+- <code> size_t _number_sample_points </code> (it is the inteher $n$)
+- <code> Vector _points </code> (vector of  $(x_i)_{i=1, \dots, n}$)
+- <code> Vector _weights </code> (vector of $(w_i)_{i=1, \dots,n}$)
+ 
+And one public method:
+- <code> double integrate(std :: function<double(double)> func) </code>
+where we implement the formula for the integral above.
+
+### Class HestonPricer</code>
+
+**Purpose of the class:**
+In this class we implement the analytical procedure to compute the price of a Call option where the underlying follow a dynamic given by the Heston model. As the price of a Call option can be computed in different ways (in our case with MonteCalro and with an analitycal method) this is a general class that provides for the implementation of subclasses, each for a different price calculation method.
+
+**Structure of the class:**
+
+Three attributes:
+- <code> HestonModel _model </code> (our asset follow the dynamic given by the Heston model)
+- <code> double _strike </code> (strike $K$ of the option)
+- <code> double _maturity </code> (maturity $T$ of the option)
+
+Methods (all public):
+- <code> HestonPricer(const HestonModel& model, const double& strike, const double& maturity) </code> (constructor with parameters)
+- <code> virtual HestonPricer* clone() const = 0 </code> (the clone method, set like that because of the presence of subclasses)
+- <code> virtual double price() const = 0 </code> (virtual method for the computation of the price, we will have a different implementation depending on the subclass)
+
+
+### Class AnalyticalHestonPricer</code>
+
+This is a subclass of the class HestonPricer described above. We based the implementation of this class using the exam 2021</2022about the pricing under the Heston model.
+
+**Purpose of the class:**
+The task is to compute the price of a Call option using the analytical formula explained before (the which one with the integrals). 
+
+**Structure of the class:**
+In order not to lengthen the discussion too much, we refer to the exam of 2021/2022 for a complete description of this class. We observe that we have only one attribute:
+- <code> size_t _gauss_legendre_sample_size </code> that represents the integer $n$ of the Gauss-Legendre formula
+
+Obviuosly the most important method in this class is the one given by the pricer method:
+- <code> double price() </code> where we implement the analytical formula.
+
 
 
 
