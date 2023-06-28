@@ -20,7 +20,7 @@ int main()
 	double correlation = -0.9;           // rho
 	double maturity = 1;                //T
 
-	int n_simulations = 500;
+	int n_simulations = 1000;
 
 	//Grid
 	Vector time_points;

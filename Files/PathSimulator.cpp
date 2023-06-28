@@ -1,20 +1,20 @@
 #include "PathSimulator.h"
 
 // Implementation of PathSimulator methods
-PathSimulator::PathSimulator(const HestonModel & model, const double & maturity, const size_t & size)
-	: _model(model) // Using the copy constructor of the class HestonModel
+PathSimulator::PathSimulator(const HestonModel & model, const double & maturity, const size_t & size, bool is_log)
+	: _model(model), _is_log(is_log) // Using the copy constructor of the class HestonModel
 {
 	for (size_t idx = 0; idx < size; idx++)
 		_time_points.push_back(idx * maturity / (size - 1));
 }
 
-PathSimulator::PathSimulator(const HestonModel & model, const Vector & time_points)
-	: _model(model), _time_points(time_points)
+PathSimulator::PathSimulator(const HestonModel & model, const Vector & time_points, bool is_log)
+	: _model(model), _time_points(time_points), _is_log(is_log)
 {
 }
 
 PathSimulator::PathSimulator(const PathSimulator & path_simulator)
-	: _model(path_simulator._model), _time_points(path_simulator._time_points)
+	: _model(path_simulator._model), _time_points(path_simulator._time_points), _is_log(path_simulator._is_log)
 {
 }
 
@@ -56,19 +56,23 @@ double PathSimulator::expiry() const
 {
 	return _time_points[_time_points.size() - 1];
 }
+bool PathSimulator::get_is_log() const
+{
+	return _is_log;
+}
 // Implementation of EulerPathSimulatorModified methods
 EulerPathSimulatorModified* EulerPathSimulatorModified::clone() const
 {
 	return new EulerPathSimulatorModified(*this);
 }
 
-EulerPathSimulatorModified::EulerPathSimulatorModified(const HestonModel & model, const double & maturity, const size_t & size)
-	: PathSimulator(model, maturity, size)
+EulerPathSimulatorModified::EulerPathSimulatorModified(const HestonModel & model, const double & maturity, const size_t & size, bool is_log)
+	: PathSimulator(model, maturity, size, is_log)
 {
 }
 
-EulerPathSimulatorModified::EulerPathSimulatorModified(const HestonModel & model, const Vector & time_points)
-	: PathSimulator(model, time_points)
+EulerPathSimulatorModified::EulerPathSimulatorModified(const HestonModel & model, const Vector & time_points, bool is_log)
+	: PathSimulator(model, time_points, is_log)
 {
 }
 
@@ -122,8 +126,8 @@ BroadieKaya* BroadieKaya::clone() const
 	return new BroadieKaya(*this);
 }
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg, const double &gamma_1, const bool &is_log)
-	: PathSimulator(model, maturity, size), _tools(tools), _tg(tg)
+BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const size_t& size, const MathTools& tools, const bool &tg, const double &gamma_1, bool is_log)
+	: PathSimulator(model, maturity, size, is_log), _tools(tools), _tg(tg) 
 {
 	if (gamma_1 > 1 || gamma_1 < 0) {
 		throw "gamma must belong to [0,1]";
@@ -143,8 +147,8 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const
 	}
 }
 
-BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools,const bool &tg, const double& gamma_1, const bool& is_log)
-	: PathSimulator(model, time_points), _tools(tools), _tg(tg)
+BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, const MathTools& tools,const bool &tg, const double& gamma_1, bool is_log)
+	: PathSimulator(model, time_points, is_log), _tools(tools), _tg(tg)
 {
 	if (gamma_1 > 1 || gamma_1 < 0) {
 		throw "gamma must belong to [0,1]";
@@ -234,7 +238,6 @@ Vector BroadieKaya::next_step(const size_t& time_idx, const double& log_asset_pr
 	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 	std::normal_distribution<double> distribution(0., 1.);
 	//according to the attribute tg, we choose the scheme for the variance
-	std::cout << _delta_t << std::endl;
 	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
 	double next_log_asset_price = log_asset_price + _k_0 + _k_1 * variance + _k_2 * next_variance + std::sqrt(_k_3 * variance + _k_4 * next_variance) * distribution(generator);
 	/*next_values.push_back(std::exp(log_asset_price));*/

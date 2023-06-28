@@ -10,10 +10,15 @@ EuropeanOptionPayoff::EuropeanOptionPayoff(const CALL_PUT & call_put, const doub
 {
 }
 
-double EuropeanOptionPayoff::payoff(const Matrix & path) const
+double EuropeanOptionPayoff::payoff(const Matrix & path, bool is_log) const
 {
 	double mult = (_call_put == CALL_PUT::CALL) ? 1. : -1.;
-	return std::max(mult * (path[path.size() - 1][0] - _strike), 0.);
+	if (is_log) {
+		return std::max(mult * (std::exp(path[path.size() - 1][0]) - _strike), 0.);
+	}
+	else {
+		return std::max(mult * (path[path.size() - 1][0] - _strike), 0.);
+	}
 }
 
 DigitalOptionPayoff * DigitalOptionPayoff::clone() const
@@ -26,10 +31,15 @@ DigitalOptionPayoff::DigitalOptionPayoff(const CALL_PUT & call_put, const double
 {
 }
 
-double DigitalOptionPayoff::payoff(const Matrix & path) const
+double DigitalOptionPayoff::payoff(const Matrix & path, bool is_log) const
 {
 	double mult = (_call_put == CALL_PUT::CALL) ? 1. : -1.;
-	return (mult * (path[path.size() - 1][0] - _strike) > 0) ? 1. : 0.;
+	if (is_log) {
+		return (mult * (std::exp(path[path.size() - 1][0]) - _strike) > 0) ? 1. : 0.;
+	}
+	else {
+		return (mult * (path[path.size() - 1][0] - _strike) > 0) ? 1. : 0.;
+	}
 }
 
 AmericanOptionPayoff * AmericanOptionPayoff::clone() const
@@ -42,14 +52,14 @@ AmericanOptionPayoff::AmericanOptionPayoff(const CALL_PUT & call_put, const doub
 {
 }
 
-double AmericanOptionPayoff::payoff(const Matrix & path) const
+double AmericanOptionPayoff::payoff(const Matrix & path, bool is_log) const
 {
 	double mult = (_call_put == CALL_PUT::CALL) ? 1. : -1.;
 
 	double payoff_max = 0.;
 	for (size_t idx = 0; idx < path.size(); idx++)
 	{
-		double current_payoff = std::max(mult * (path[idx][0] - _strike), 0.);
+		double current_payoff = std::max(mult * (std::exp(path[idx][0]) - _strike), 0.) ? is_log : std::max(mult * (path[idx][0] - _strike), 0.);
 		if (current_payoff > payoff_max)
 			payoff_max = current_payoff;
 	}
@@ -66,7 +76,7 @@ AmericanBarrierOptionPayoff::AmericanBarrierOptionPayoff(const CALL_PUT & call_p
 {
 }
 
-double AmericanBarrierOptionPayoff::payoff(const Matrix & path) const
+double AmericanBarrierOptionPayoff::payoff(const Matrix & path, bool is_log) const
 {
 	// Exercise
 	return 0.;

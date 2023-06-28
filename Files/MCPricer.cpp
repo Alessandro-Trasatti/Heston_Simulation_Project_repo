@@ -43,8 +43,9 @@ double MCPricer::price() const
 	for (size_t sim_idx = 0; sim_idx < _number_sims; sim_idx++)
 	{
 		Matrix path = _pathSimulator->path();
+		bool is_log = _pathSimulator->get_is_log();
 		n_nan = (isnan(path[path.size() - 1][0])) ? n_nan + 1 : n_nan;
-		price = (isnan(path[path.size() - 1][0])) ? price : price + _payoff->payoff(path);
+		price = (isnan(path[path.size() - 1][0])) ? price : price + _payoff->payoff(path,is_log);
 	}
 	// Case if all paths are nan
 	if (n_nan == (double)_number_sims) {
