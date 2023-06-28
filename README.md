@@ -1,7 +1,7 @@
 # Efficient Heston Simulation
 
 ## Goal of the project
-We are going to be dealing with one of the most popular stochstic volatility models (*SV models*), the Heston model. We recall that the equation of the model under $\mathbb{P}$, *a risk neautral measure*, are
+We are going to be dealing with one of the most popular stochastic volatility models (*SV models*), the Heston model. We recall that the equation of the model under $\mathbb{P}$, *a risk neautral measure*, are
 
 $\frac{dS_t}{S_t} = r dt + \sqrt{V_t}dW_t^S,$
 
