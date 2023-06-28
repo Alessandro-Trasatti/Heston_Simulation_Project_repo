@@ -5,7 +5,7 @@ PathSimulator::PathSimulator(const HestonModel & model, const double & maturity,
 	: _model(model), _is_log(is_log) // Using the copy constructor of the class HestonModel
 {
 	for (size_t idx = 0; idx < size; idx++)
-		_time_points.push_back(idx * maturity / (size - 1));
+		_time_points.push_back(idx * maturity / (size - 1.0));
 }
 
 PathSimulator::PathSimulator(const HestonModel & model, const Vector & time_points, bool is_log)
@@ -36,7 +36,12 @@ Matrix PathSimulator::path() const
 {
 	Matrix path;
 	Vector current_values;
-	current_values.push_back(_model.initial_spot());
+	if (get_is_log()) {
+		current_values.push_back(std::log(_model.initial_spot()));
+	}
+	else {
+		current_values.push_back(_model.initial_spot());
+	}
 	current_values.push_back(_model.initial_variance());
 	path.push_back(current_values); // (*_model).initial_spot()
 
@@ -136,7 +141,6 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const
 		_gamma_1 = gamma_1;
 		_gamma_2 = 1 - gamma_1;
 		_delta_t = _time_points[1] - _time_points[0];
-		std::cout << _delta_t << std::endl;
 		_k_0 = - model.correlation() * model.mean_reversion_level() * model.mean_reversion_speed() / model.vol_of_vol();
 		_k_1 = gamma_1 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) - model.correlation() / model.vol_of_vol();
 		_k_2 = _gamma_2 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) + model.correlation() / model.vol_of_vol();
@@ -240,12 +244,43 @@ Vector BroadieKaya::next_step(const size_t& time_idx, const double& log_asset_pr
 	//according to the attribute tg, we choose the scheme for the variance
 	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
 	double next_log_asset_price = log_asset_price + _k_0 + _k_1 * variance + _k_2 * next_variance + std::sqrt(_k_3 * variance + _k_4 * next_variance) * distribution(generator);
-	/*next_values.push_back(std::exp(log_asset_price));*/
-	next_values.push_back(next_log_asset_price);
+	if (get_is_log()){
+		next_values.push_back(next_log_asset_price);
+	}
+	else {
+		next_values.push_back(std::exp(next_log_asset_price));
+	}
 	next_values.push_back(next_variance);
 	return next_values;
 }
 
+/*
+
+Ale's code
+
+Vector BroadieKaya::next_step(const size_t& time_idx, const double& asset_price, const double& variance) const
+{
+	Vector next_values;
+	std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+	std::normal_distribution<double> distribution(0., 1.);
+	double kappa = _model.mean_reversion_speed();
+	double theta = _model.mean_reversion_level();
+	double rho = _model.correlation();
+	double sigma_v = _model.vol_of_vol();
+	double timestep = _time_points[1] - _time_points[0];
+
+	double next_variance = (_tg) ? truncature_gaussian(variance) : quadratic_exponential(variance);
+	double log_asset_price = std::log(asset_price);
+	double integral = _tools.trapezoidalMethod(variance, next_variance, timestep);
+
+	double next_mean = log_asset_price + _model.drift() * timestep + (rho / sigma_v) * (next_variance - variance - kappa * theta * timestep) + (kappa * rho / sigma_v - 0.5) * integral;
+	next_variance = (1 - rho * rho) * integral;
+
+	next_values.push_back(next_mean + std::sqrt(next_variance) * distribution(generator));
+	next_values.push_back(next_variance);
+	return next_values;
+}
+*/
 /*
 Vector BroadieKaya::next_step(const size_t &time_idx, const double &asset_price, const double &variance) const
 {

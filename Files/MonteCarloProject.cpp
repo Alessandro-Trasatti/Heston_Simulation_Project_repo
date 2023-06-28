@@ -20,7 +20,7 @@ int main()
 	double correlation = -0.9;           // rho
 	double maturity = 1;                //T
 
-	int n_simulations = 1000;
+	int n_simulations = 10000;
 
 	//Grid
 	Vector time_points;
@@ -57,12 +57,11 @@ int main()
 	//test class MathTools
 	MathTools tools;
 	bool tg = true;
-
 	//BroadieKaya scheme and tests of its methods
 	//BroadieKaya Bk1(firstModel, time_points, tools, tg);
 	//BroadieKaya Bk2(firstModel, time_points, tools, !tg);
-	BroadieKaya Bk1(firstModel, maturity, 12, tools, tg);
-	BroadieKaya Bk2(firstModel, maturity, 12, tools, !tg);
+	BroadieKaya Bk1(firstModel, maturity, 12, tools, tg, true);
+	BroadieKaya Bk2(firstModel, maturity, 12, tools, !tg, true);
 
 	//test of the TG algorithm, we set the method in public to do the test
 	//std::cout << Bk1.truncature_gaussian(0.1) << std::endl;
