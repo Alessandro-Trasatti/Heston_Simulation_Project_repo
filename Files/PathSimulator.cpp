@@ -146,6 +146,11 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const double& maturity, const
 		_k_2 = _gamma_2 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) + model.correlation() / model.vol_of_vol();
 		_k_3 = gamma_1 * _delta_t * (1 - model.correlation() * model.correlation());
 		_k_4 = _gamma_2 * _delta_t * (1 - model.correlation() * model.correlation());
+		_discounting_factor = std::exp(-model.mean_reversion_speed());
+		_k_var_1 = _model.vol_of_vol() * _model.vol_of_vol() * _discounting_factor * (1 - _discounting_factor) / _model.mean_reversion_level();
+		_k_var_2 = _model.mean_reversion_level() * _model.vol_of_vol() * _model.vol_of_vol() * (1 - _discounting_factor) * (1 - _discounting_factor) / (2 * _model.mean_reversion_speed());
+		_k_var_3 = _discounting_factor;
+		_k_var_4 = _model.mean_reversion_level() * (1 - _discounting_factor);
 		_r = model.drift();
 		_is_log = is_log;
 	}
@@ -166,23 +171,26 @@ BroadieKaya::BroadieKaya(const HestonModel& model, const Vector& time_points, co
 		_k_2 = _gamma_2 * _delta_t * (model.mean_reversion_speed() * model.correlation() / model.vol_of_vol() - 0.5) + model.correlation() / model.vol_of_vol();
 		_k_3 = gamma_1 * _delta_t * (1 - model.correlation() * model.correlation());
 		_k_4 = _gamma_2 * _delta_t * (1 - model.correlation() * model.correlation());
+		_discounting_factor = std::exp(-model.mean_reversion_speed());
+		_k_var_1 = _model.vol_of_vol() * _model.vol_of_vol() * _discounting_factor * (1 - _discounting_factor) / _model.mean_reversion_speed()	;
+		_k_var_2 = _model.mean_reversion_level() * _model.vol_of_vol() * _model.vol_of_vol() * (1 - _discounting_factor) * (1 - _discounting_factor) / (2 * _model.mean_reversion_speed());
+		_k_var_3 = _discounting_factor;
+		_k_var_4 = _model.mean_reversion_level() * (1 - _discounting_factor);
 		_r = model.drift();
 		_is_log = is_log;
 	}
 }
-
 double BroadieKaya::truncature_gaussian(const double &variance, int n_iterations_secant_method) const
 {
     double theta = _model.mean_reversion_level();
 	double k = _model.mean_reversion_speed();
 	double sigma_v = _model.vol_of_vol();
 	double Delta_t = _time_points[1] - _time_points[0];
-	double discounting_factor = std::exp(-k * Delta_t);
 
 	// theta + (V - theta) * e^{-k Delta_t}
-	double m = theta + (variance - theta) * discounting_factor;
+	double m = _model.mean_reversion_level() + (variance - _model.mean_reversion_level()) * _discounting_factor;
 	// ((V * sigma_v^2 e^{-k Delta_t}) / k) * (1 - e^{-k Delta_t}) + (theta * sigma_v^2) / (2 k) * (1- e^{-k Delta_t})^2
-	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1- discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- discounting_factor) * (1- discounting_factor);
+	double s_squared = (variance * sigma_v * sigma_v * _discounting_factor / k) * (1- _discounting_factor) + (theta * sigma_v * sigma_v/ (2 * k)) * (1- _discounting_factor) * (1- _discounting_factor);
 	double psi = s_squared/(m * m);
 	// Weird thing to store a function that we have to pass as an argument for the secant method.
 	auto eqr = std::bind(&MathTools::eq_r, _tools, _1, _2);
@@ -199,38 +207,34 @@ double BroadieKaya::truncature_gaussian(const double &variance, int n_iterations
 double BroadieKaya::quadratic_exponential(const double& variance, const double &psi_threshold, int n_iterations_secant_method) const
 {
 	double next_variance;
-	double theta = _model.mean_reversion_level();
-	double k = _model.mean_reversion_speed();
-	double sigma_v = _model.vol_of_vol();
-	double Delta_t = _time_points[1] - _time_points[0];
-	double discounting_factor = std::exp(-k * Delta_t);
 
 	// theta + (V - theta) * e^{-k Delta_t}
-	double m = theta + (variance - theta) * discounting_factor;
+	double m = _k_var_3 * variance + _k_var_4;
 	// ((V * sigma_v^2 e^{-k Delta_t}) / k) * (1 - e^{-k Delta_t}) + (theta * sigma_v^2) / (2 k) * (1- e^{-k Delta_t})^2
-	double s_squared = (variance * sigma_v * sigma_v * discounting_factor / k) * (1 - discounting_factor) + (theta * sigma_v * sigma_v / (2 * k)) * (1 - discounting_factor) * (1 - discounting_factor);
+	double s_squared = _k_var_1 * variance + _k_var_2;
+	//double s_squared = (variance * _model.vol_of_vol() * _model.vol_of_vol() * _discounting_factor / k) * (1 - _discounting_factor) + (theta * sigma_v * sigma_v / (2 * k)) * (1 - _discounting_factor) * (1 - _discounting_factor);
 	// (s/m)^2
 	double psi = s_squared / (m * m);
 	if (psi < psi_threshold) {
+		std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+		std::normal_distribution<double> distribution(0., 1.);
+		double Z_V = distribution(generator);
 		// (2 / psi) - 1 + sqrt{(2/psi)} * sqrt{(2/psi) - 1}
 		double b_squared = (2 / psi) - 1 + std::sqrt(2 / psi) * std::sqrt((2 / psi) - 1);
 		// m / (1 + b^2)
 		double a = (m / (1 + b_squared));
-		std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
-		std::normal_distribution<double> distribution(0., 1.);
-		double Z_V = distribution(generator);
 		next_variance = a * (std::sqrt(b_squared) + Z_V) * (std::sqrt(b_squared) + Z_V);
 	}
 	else {
 		// (psi - 1) / (psi + 1)
 		double p = (psi - 1) / (psi + 1);
 		// 2 / (m * (psi + 1))
-		double beta = 2 / (m * (psi + 1));
+		double beta = (1-p) / m;
 		// Draw of a (0,1) uniform 
 		std::mt19937 generator = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
 		std::uniform_real_distribution<double> distribution(0., 1.);
 		double U_V = distribution(generator);
-		next_variance = (U_V < p) ? 0 : std::log((1 - p) / (1 - U_V));
+		next_variance = (U_V < p) ? 0 : std::log((1 - p) / (1 - U_V)) / beta;
 	}
 
 	return next_variance;

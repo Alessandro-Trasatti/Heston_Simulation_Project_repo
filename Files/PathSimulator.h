@@ -85,6 +85,11 @@ private:
 	double _k_4;
 	double _delta_t;
 	double _r;
+	double _discounting_factor;
+	double _k_var_1;
+	double _k_var_2;
+	double _k_var_3;
+	double _k_var_4;
 	bool _is_log;
 	// Returns the variance and the spot using the BroadieKaya discretization scheme.
 	Vector next_step(const size_t& time_idx, const double& asset_price, const double& variance) const override;

@@ -18,17 +18,19 @@ int main()
 	double mean_reversion_level = 0.04;  // theta
 	double vol_of_vol = 1.;            // sigma_V
 	double correlation = -0.9;           // rho
-	double maturity = 1;                //T
+	double maturity = 10;                //T
 
-	int n_simulations = 10000;
+	int n_simulations = 100000;
 
+	//step_size from the paper
+	Vector dt = { 1, 0.5, 0.25, 0.125, 0.0625, 0.03125};
+	
 	//Grid
 	Vector time_points;
 	double t = 0;
-	double dt = 0.5;
 	while (t < maturity) {
 		time_points.push_back(t);
-		t += dt;
+		t += dt.at(0);
 	}
 
 	//tests constructors class HestonModel and of the operator =
@@ -37,8 +39,8 @@ int main()
 	firstModel = testModel;
 
 	//Truncated Euler Scheme and tests of its methods;
-	//EulerPathSimulatorModified eps1(firstModel, time_points);
-	EulerPathSimulatorModified eps1(firstModel, maturity, 12);
+	EulerPathSimulatorModified eps1(firstModel, time_points);
+	//EulerPathSimulatorModified eps1(firstModel, maturity, 12);
 
 
 	maturity = eps1.expiry();
@@ -59,16 +61,16 @@ int main()
 	bool tg = true;
 	//BroadieKaya scheme and tests of its methods
 	//BroadieKaya Bk1(firstModel, time_points, tools, tg);
-	//BroadieKaya Bk2(firstModel, time_points, tools, !tg);
-	BroadieKaya Bk1(firstModel, maturity, 12, tools, tg, true);
-	BroadieKaya Bk2(firstModel, maturity, 12, tools, !tg, true);
+	BroadieKaya Bk2(firstModel, time_points, tools, !tg);
+	//BroadieKaya Bk1(firstModel, maturity, 12, tools, tg, true);
+	//BroadieKaya Bk2(firstModel, maturity, 12, tools, !tg, true);
 
 	//test of the TG algorithm, we set the method in public to do the test
 	//std::cout << Bk1.truncature_gaussian(0.1) << std::endl;
 	
 	//test of the computation of a trajectory of the spot using the BroadieKaya algorithm
-	double maturity_bk_1 = Bk1.expiry();
-	Matrix path_bk_1 = Bk1.path();
+	//double maturity_bk_1 = Bk1.expiry();
+	//Matrix path_bk_1 = Bk1.path();
 	double maturity_bk_2 = Bk2.expiry();
 	Matrix path_bk_2 = Bk2.path();
 	
@@ -86,7 +88,7 @@ int main()
 	}
 	*/
 	//Strike, in the article 70,100,140
-	double strike = 100;
+	double strike = 70;
 
 	//PayOff
 	enum CALL_PUT call;
@@ -95,17 +97,17 @@ int main()
 
 	//Pricing
 	MCPricer pricer_euler(n_simulations, payoff, eps1, drift);
-	MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
-	MCPricer pricer_bk_2(n_simulations, payoff, Bk1, drift);
+	//MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
+	MCPricer pricer_bk_2(n_simulations, payoff, Bk2, drift);
 	double price_euler = pricer_euler.price();
-	double price_bk_1 = pricer_bk_1.price();
+	//double price_bk_1 = pricer_bk_1.price();
 	double price_bk_2 = pricer_bk_2.price();
 
 	//We notice a substancial difference between prices obtained with the BroadieKaya schemes, but almost no difference between the TG-QE schemes 
 	std::cout << "Price obtained with the truncated Euler scheme" << std::endl;
 	std::cout << price_euler << std::endl;
-	std::cout << "Price obtained with the TG-BroadieKaya scheme" << std::endl;
-	std::cout << price_bk_1 << std::endl;
+	//std::cout << "Price obtained with the TG-BroadieKaya scheme" << std::endl;
+	//std::cout << price_bk_1 << std::endl;
 	std::cout << "Price obtained with the QE-BroadieKaya scheme" << std::endl;
 	std::cout << price_bk_2 << std::endl;
 
