@@ -86,6 +86,7 @@ The PathSimulator class is meant to give a general class with all the methods an
 It contains as attributs a model <code>HestonModel _model</code>, systematically a HestonModel in our case for the sake of simplicity. It contains also a temporal grid <code>Vector _time_points</code>. Its methods allow us to get trajectories of the underlying, for instance:
 -the method <code> virtual Vector next_step </code> codes the way with which we move to the next step of a general (virtual) discretization scheme - returns the variance and the spot.
 -the method <code>Matrix path() const</code>, return one trajectory of the asset price and of the variance.
+-the attribute "<code> is_log </code> indicates if the discretization scheme is done on the log asset or the asset.
 
 ### Class <code>EulerPathSimulatorModified</code>
 **Purpose of the class**:
@@ -124,7 +125,7 @@ $$ X_{t_{k} + \Delta t} = X_{t_{k}} + \dfrac{\rho}{\sigma_{V}} (V_{t_k + \Delta 
 
 $$ + (\dfrac{\kappa \rho}{\sigma_{V}} -\dfrac{1}{2}) \int\limits_{t}^{t+\Delta t} V(u) du + \sqrt{1 - \rho^2} \int\limits_{t}^{t+\Delta t} \sqrt{V(u)} dW(u) $$
 
-and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential. **to be detailed**
+and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential
 
 **Structure of the class**:
 On the contrary of the previous class <code> EulerPathSimulatorModified </code> we now have divided the step from $t$ to $t + \Delta t$ in few private methods:
@@ -132,7 +133,7 @@ On the contrary of the previous class <code> EulerPathSimulatorModified </code> 
 - <code> quadratic_exponential </code>
 - <code> next_step</code>
 
-As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below)
+As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below). Furthermore, we added many attributes <code> k_0,...,k_4,k_var_0,...,k_var_4 </code> that depend only on the attributes of the Heston model and on the temporal step size $\Delta$, we define them as attributes so that we don't have to compute them at each iteration of the monte carlo loop.
 
 ### Class <code> MathTools </code>
 
@@ -156,9 +157,9 @@ The purpose of this abstract class is to specify the payoff of an option, this c
 **Structure of the class**:
 This class contains only:
 -<code> virtual Payoff* clone() const = 0 </code>
--<code> virtual double payoff(const Matrix& path) const = 0 </code>
+-<code> virtual double payoff(const Matrix& path, bool is_log) const = 0 </code>
  
-The clone method is always a pure virtual method, the second is virtual pure as well because one must knows the payoff precisely and hence re implement it in the derived classes.
+The clone method is always a pure virtual method, the second is virtual pure as well because one must knows the payoff precisely and hence re implement it in the derived classes. The parameter "is_log" indicates if the first parameter path is a path of the log asset or the asset.
 
 ### Enum Class <code>CALL_PUT </code>
 **Purpose of the class**:
