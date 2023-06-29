@@ -86,6 +86,7 @@ The PathSimulator class is meant to give a general class with all the methods an
 It contains as attributs a model <code>HestonModel _model</code>, systematically a HestonModel in our case for the sake of simplicity. It contains also a temporal grid <code>Vector _time_points</code>. Its methods allow us to get trajectories of the underlying, for instance:
 -the method <code> virtual Vector next_step </code> codes the way with which we move to the next step of a general (virtual) discretization scheme - returns the variance and the spot.
 -the method <code>Matrix path() const</code>, return one trajectory of the asset price and of the variance.
+-the attribute "<code> is_log </code> indicates if the discretization scheme is done on the log asset or the asset.
 
 ### Class <code>EulerPathSimulatorModified</code>
 **Purpose of the class**:
@@ -156,9 +157,9 @@ The purpose of this abstract class is to specify the payoff of an option, this c
 **Structure of the class**:
 This class contains only:
 -<code> virtual Payoff* clone() const = 0 </code>
--<code> virtual double payoff(const Matrix& path) const = 0 </code>
+-<code> virtual double payoff(const Matrix& path, bool is_log) const = 0 </code>
  
-The clone method is always a pure virtual method, the second is virtual pure as well because one must knows the payoff precisely and hence re implement it in the derived classes.
+The clone method is always a pure virtual method, the second is virtual pure as well because one must knows the payoff precisely and hence re implement it in the derived classes. The parameter "is_log" indicates if the first parameter path is a path of the log asset or the asset.
 
 ### Enum Class <code>CALL_PUT </code>
 **Purpose of the class**:
