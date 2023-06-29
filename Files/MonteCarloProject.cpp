@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "HestonModel.h"
 #include "HestonPricer.h"
 #include "PathSimulator.h"
@@ -16,21 +17,22 @@ int main()
 	double drift = 0;                 // r, the rate
 	double mean_reversion_speed = 0.5;  // kappa
 	double mean_reversion_level = 0.04;  // theta
-	double vol_of_vol = 1.;            // sigma_V
+	double vol_of_vol = 1.0;            // sigma_V
 	double correlation = -0.9;           // rho
-	double maturity = 10;                //T
+	double maturity = 1;                //T
 
-	int n_simulations = 100000;
+	int n_simulations = 10000;
 
-	//step_size from the paper
-	Vector dt = { 1, 0.5, 0.25, 0.125, 0.0625, 0.03125};
+	//step_size from the paper: { 1, 0.5, 0.25, 0.125, 0.0625, 0.03125};
+
 	
 	//Grid
 	Vector time_points;
 	double t = 0;
+	double dt = 0.1;
 	while (t < maturity) {
 		time_points.push_back(t);
-		t += dt.at(0);
+		t += dt;
 	}
 
 	//tests constructors class HestonModel and of the operator =
@@ -60,7 +62,7 @@ int main()
 	MathTools tools;
 	bool tg = true;
 	//BroadieKaya scheme and tests of its methods
-	//BroadieKaya Bk1(firstModel, time_points, tools, tg);
+	BroadieKaya Bk1(firstModel, time_points, tools, tg);
 	BroadieKaya Bk2(firstModel, time_points, tools, !tg);
 	//BroadieKaya Bk1(firstModel, maturity, 12, tools, tg, true);
 	//BroadieKaya Bk2(firstModel, maturity, 12, tools, !tg, true);
@@ -88,7 +90,7 @@ int main()
 	}
 	*/
 	//Strike, in the article 70,100,140
-	double strike = 70;
+	double strike = 50;
 
 	//PayOff
 	enum CALL_PUT call;
@@ -97,17 +99,40 @@ int main()
 
 	//Pricing
 	MCPricer pricer_euler(n_simulations, payoff, eps1, drift);
-	//MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
+	MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
 	MCPricer pricer_bk_2(n_simulations, payoff, Bk2, drift);
+	
+	for (int i(0); i < 10; i++) {
+		strike = 50 + 10 * i;
+		EuropeanOptionPayoff payoff(call, strike);
+		MCPricer pricer_euler(n_simulations, payoff, eps1, drift);
+		MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
+		MCPricer pricer_bk_2(n_simulations, payoff, Bk2, drift);
+		double price_euler = pricer_euler.price();
+		double price_bk_1 = pricer_bk_1.price();
+		double price_bk_2 = pricer_bk_2.price();
+		AnalyticalHestonPricer EdoaPricer(firstModel, strike, maturity, 32);
+		std::cout << "Price obtained with the Analytical formula for a strike of " + std::to_string(strike) << std::endl;
+		std::cout << EdoaPricer.price() << std::endl;
+		std::cout << "Price obtained with the QE-BroadieKaya scheme for a strike of " + std::to_string(strike) << std::endl;
+		std::cout << price_bk_2 << std::endl;
+		std::cout << "Price obtained with the TG-BroadieKaya scheme for a strike of " + std::to_string(strike) << std::endl;
+		std::cout << price_bk_1 << std::endl;
+		std::cout << "Price obtained with the Euler scheme for a strike of " + std::to_string(strike) << std::endl;
+		std::cout << price_euler << std::endl;
+
+	}
+	std::cin.get();
+	/*
 	double price_euler = pricer_euler.price();
-	//double price_bk_1 = pricer_bk_1.price();
+	double price_bk_1 = pricer_bk_1.price();
 	double price_bk_2 = pricer_bk_2.price();
 
 	//We notice a substancial difference between prices obtained with the BroadieKaya schemes, but almost no difference between the TG-QE schemes 
 	std::cout << "Price obtained with the truncated Euler scheme" << std::endl;
 	std::cout << price_euler << std::endl;
-	//std::cout << "Price obtained with the TG-BroadieKaya scheme" << std::endl;
-	//std::cout << price_bk_1 << std::endl;
+	std::cout << "Price obtained with the TG-BroadieKaya scheme" << std::endl;
+	std::cout << price_bk_1 << std::endl;
 	std::cout << "Price obtained with the QE-BroadieKaya scheme" << std::endl;
 	std::cout << price_bk_2 << std::endl;
 
@@ -115,6 +140,7 @@ int main()
 	AnalyticalHestonPricer EdoaPricer(firstModel, strike, maturity, 32);
 	std::cout << EdoaPricer.price() << std::endl;
 	std::cin.get();
+	*/
 	return 0;
 
 }
