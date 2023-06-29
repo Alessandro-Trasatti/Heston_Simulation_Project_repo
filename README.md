@@ -124,7 +124,7 @@ $$ X_{t_{k} + \Delta t} = X_{t_{k}} + \dfrac{\rho}{\sigma_{V}} (V_{t_k + \Delta 
 
 $$ + (\dfrac{\kappa \rho}{\sigma_{V}} -\dfrac{1}{2}) \int\limits_{t}^{t+\Delta t} V(u) du + \sqrt{1 - \rho^2} \int\limits_{t}^{t+\Delta t} \sqrt{V(u)} dW(u) $$
 
-and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential. Furthermore, we added many attributes <code> k_0,...,k_4,k_var_0,...,k_var_4 </code> that depend only on the attributes of the Heston model and on the temporal step size $\Delta$, we define them as attributes so that we don't have to compute them at each iteration of the monte carlo loop.
+and we will implement two schemes in order to compute $V_{t_k+\Delta t}$ knowing $V_{t_{k}}$, the *TG*, truncated gaussian and *QE*, quadratic exponential
 
 **Structure of the class**:
 On the contrary of the previous class <code> EulerPathSimulatorModified </code> we now have divided the step from $t$ to $t + \Delta t$ in few private methods:
@@ -132,7 +132,7 @@ On the contrary of the previous class <code> EulerPathSimulatorModified </code> 
 - <code> quadratic_exponential </code>
 - <code> next_step</code>
 
-As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below)
+As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below). Furthermore, we added many attributes <code> k_0,...,k_4,k_var_0,...,k_var_4 </code> that depend only on the attributes of the Heston model and on the temporal step size $\Delta$, we define them as attributes so that we don't have to compute them at each iteration of the monte carlo loop.
 
 ### Class <code> MathTools </code>
 
