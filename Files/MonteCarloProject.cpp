@@ -9,19 +9,23 @@
 using Vector = std::vector<double>;
 using Matrix = std::vector<std::vector<double>>;
 
+double func_test(double x) {
+	return std::exp(-x * x / 2);
+}
+
 int main()
 {
 	//Numerical values from the paper, Case 1
 	double initial_spot = 100;          // S_0  
 	double initial_variance = 0.04;      // V_0
 	double drift = 0;                 // r, the rate
-	double mean_reversion_speed = 0.5;  // kappa
+	double mean_reversion_speed = 1.0;  // kappa
 	double mean_reversion_level = 0.04;  // theta
 	double vol_of_vol = 1.0;            // sigma_V
 	double correlation = -0.9;           // rho
 	double maturity = 1;                //T
 
-	int n_simulations = 10000;
+	int n_simulations = 100000;
 
 	//step_size from the paper: { 1, 0.5, 0.25, 0.125, 0.0625, 0.03125};
 
@@ -44,10 +48,8 @@ int main()
 	EulerPathSimulatorModified eps1(firstModel, time_points);
 	//EulerPathSimulatorModified eps1(firstModel, maturity, 12);
 
-
 	maturity = eps1.expiry();
 	Matrix path = eps1.path();
-
 
 	//Print of a trajectory of the spot, we can notice that the asset may become constant after few iterations, that's because in the truncated 
 	//Euler Scheme, the variance can become null and in this case the asset price is only incremented with the drift, that we chose null in this example.
@@ -90,20 +92,33 @@ int main()
 	}
 	*/
 	//Strike, in the article 70,100,140
-	double strike = 50;
+	double strike = 140;
 
 	//PayOff
 	enum CALL_PUT call;
 	call = CALL_PUT::CALL;
 	EuropeanOptionPayoff payoff(call, strike);
-
+	
 	//Pricing
 	MCPricer pricer_euler(n_simulations, payoff, eps1, drift);
 	MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
 	MCPricer pricer_bk_2(n_simulations, payoff, Bk2, drift);
+	double price_bk_2 = pricer_bk_2.price();
+	std::cout << "Price obtained with the QE-BroadieKaya scheme for a strike of " + std::to_string(strike) << std::endl;
+	std::cout << price_bk_2 << std::endl;
+
+	AnalyticalHestonPricer EdoaPricer(firstModel, strike, maturity, 32);
+	std::cout << "Price obtained with the Analytical formula for a strike of " + std::to_string(strike) << std::endl;
+	std::cout << EdoaPricer.price() << std::endl;
+	/*
+	double price_bk_2 = pricer_bk_2.price();
+	std::cout << "Price obtained with the QE-BroadieKaya scheme for a strike of " + std::to_string(strike) << std::endl;
+	std::cout << price_bk_2 << std::endl;
+	*/
+	/*
 	
 	for (int i(0); i < 10; i++) {
-		strike = 50 + 10 * i;
+		strike = 140 + 10 * i;
 		EuropeanOptionPayoff payoff(call, strike);
 		MCPricer pricer_euler(n_simulations, payoff, eps1, drift);
 		MCPricer pricer_bk_1(n_simulations, payoff, Bk1, drift);
@@ -122,25 +137,72 @@ int main()
 		std::cout << price_euler << std::endl;
 
 	}
-	std::cin.get();
-	/*
-	double price_euler = pricer_euler.price();
-	double price_bk_1 = pricer_bk_1.price();
-	double price_bk_2 = pricer_bk_2.price();
-
-	//We notice a substancial difference between prices obtained with the BroadieKaya schemes, but almost no difference between the TG-QE schemes 
-	std::cout << "Price obtained with the truncated Euler scheme" << std::endl;
-	std::cout << price_euler << std::endl;
-	std::cout << "Price obtained with the TG-BroadieKaya scheme" << std::endl;
-	std::cout << price_bk_1 << std::endl;
-	std::cout << "Price obtained with the QE-BroadieKaya scheme" << std::endl;
-	std::cout << price_bk_2 << std::endl;
-
-	//Test prices analytical
-	AnalyticalHestonPricer EdoaPricer(firstModel, strike, maturity, 32);
-	std::cout << EdoaPricer.price() << std::endl;
-	std::cin.get();
 	*/
+
+	/* 
+	// Test integrate method
+	GaussLegendreQuadrature test_quadra;
+	std::cout << test_quadra.integrate(func_test) << std::endl;
+	*/
+	strike = 150;
+
+	for (int k(0); k < 1; k++) {
+	
+		std::cout << "strike: ";
+		std::cout << strike << std::endl;
+		EuropeanOptionPayoff payoff(call, strike);
+		Vector vect_vol_of_vol = {0.01, 1.0, 2.0};
+		correlation = 0.0;
+		mean_reversion_speed = 1.0;
+
+		std::cout << "Sensibility vol_of_vol in {0.01, 1.0, 2.0}:" << std::endl;
+		for (int i(0); i < 3; i += 1) {
+			vol_of_vol = vect_vol_of_vol[i];
+			HestonModel Model_test_vol_vol(initial_spot, initial_variance, drift, mean_reversion_speed, mean_reversion_level, vol_of_vol, correlation);
+			BroadieKaya Bk_vol_vol(Model_test_vol_vol, time_points, tools, !tg);
+			MCPricer pricer_vol_vol(n_simulations, payoff, Bk_vol_vol, drift);
+			double price_vol_vol = pricer_vol_vol.price();
+			std::cout << price_vol_vol;
+			std::cout << ",";
+		}
+		std::cout << " end test sensi vol_of_vol" << std::endl;
+
+		vol_of_vol = 0.5;
+		Vector vect_correlation = {-0.5, 0.0, 0.5};
+		mean_reversion_speed = 1.0;
+
+		std::cout << "Sensibility corr in [-0.5,-0.4,...,0.5]" << std::endl;
+		for (int i(0); i < 3; i += 1) {
+			correlation = vect_correlation[i];
+			HestonModel Model_test_corr(initial_spot, initial_variance, drift, mean_reversion_speed, mean_reversion_level, vol_of_vol, correlation);
+			BroadieKaya Bk_corr(Model_test_corr, time_points, tools, !tg);
+			MCPricer pricer_corr(n_simulations, payoff, Bk_corr, drift);
+			double price_corr = pricer_corr.price();
+			std::cout << price_corr;
+			std::cout << ",";
+		}
+		std::cout << " end test sensi corr" << std::endl;
+
+		correlation = 0.0;
+		vol_of_vol = 0.5;
+		Vector vect_mean_reversion_speed = {0.1, 0.7, 1.4};
+
+		std::cout << "Sensibility mean_reversion_speed in [0.1,0.2,...,1.0]" << std::endl;
+		for (int i(0); i < 3; i++) {
+			mean_reversion_speed = vect_mean_reversion_speed[i];
+			HestonModel Model_mean_reversion_speed(initial_spot, initial_variance, drift, mean_reversion_speed, mean_reversion_level, vol_of_vol, correlation);
+			BroadieKaya Bk_mean_reversion_speed(Model_mean_reversion_speed, time_points, tools, !tg);
+			MCPricer pricer_price_mean_reversion_speed(n_simulations, payoff, Bk_mean_reversion_speed, drift);
+			double price_mean_reversion_speed = pricer_price_mean_reversion_speed.price();
+			std::cout << price_mean_reversion_speed;
+			std::cout << ",";
+			mean_reversion_speed += 0.1;
+		}
+		std::cout << "end test sensi mean reversion speed" << std::endl;
+		strike += 20;
+	}
+	std::cin.get();
+	
 	return 0;
 
 }
