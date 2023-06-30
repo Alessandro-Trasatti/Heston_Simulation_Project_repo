@@ -285,8 +285,13 @@ Obviuosly the most important method in this class is the one given by the pricer
 - <code> double price() </code> where we implement the analytical formula.
 
 
+### To be continued
 
-
+To improve and complete the present work, we should:
+- Implement a class implicit volatility to express the prices in term of the implicit volatility, which is the actual market practice.
+- We should wonder why the difference of the schemes QE and TG give different prices, sometimes few euros
+- We should complete the class GaussLegendre, with a method that actually computes the nodes and weights instead of taking them by default.
+- More importantly, the analytical method didn't give satisfying results, although we didn't find the mistake after many attempts, we should recode it so that the we have convergence with the BroadieKaya scheme.
 
 
 
