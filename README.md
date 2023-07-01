@@ -295,6 +295,8 @@ To improve and complete the present work, we should:
 - We should complete the class GaussLegendre, with a method that actually computes the nodes and weights instead of taking them by default.
 - More importantly, the analytical method didn't give satisfying results, although we didn't find the mistake after many attempts, we should recode it so that the we have convergence with the BroadieKaya scheme.
 
+# Sensitivity to Parameters
+Please read the *SensitivityToParameters.ipynb* file.
 
 
 
