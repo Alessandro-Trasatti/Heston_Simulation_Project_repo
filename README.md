@@ -133,7 +133,9 @@ On the contrary of the previous class <code> EulerPathSimulatorModified </code> 
 - <code> quadratic_exponential </code>
 - <code> next_step</code>
 
-As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below). Furthermore, we added many attributes <code> k_0,...,k_4,k_var_0,...,k_var_4 </code> that depend only on the attributes of the Heston model and on the temporal step size $\Delta$, we define them as attributes so that we don't have to compute them at each iteration of the monte carlo loop.
+As explained above, truncature_gaussian and quadratic_exponential are two different ways to compute $V_{t_{k} + \Delta t}$ knowing $V_{t_{k}}$, while the method <code> next_step </code> computes the log asset price $X_{t_{k} + \Delta t}$ knowing $X_{t_{k}}, V_{t_{k}}$ and $V_{t_{k} + \Delta t}$. The class contains also an attribute <code> MathTools _tools </code> whose methods contain all the mathematical tools needed (see class below). Furthermore, we added many attributes <code> k_0,...,k_4,k_var_0,...,k_var_4 </code> that depend only on the attributes of the Heston model and on the temporal step size $\Delta$, we define them as attributes so that we don't have to compute them at each iteration of the monte carlo loop. The price do converge to the price analytical obtained online:
+
+<link> https://rdrr.io/rforge/NMOF/man/callHestoncf.html </link>
 
 ### Class <code> MathTools </code>
 
@@ -272,7 +274,7 @@ Methods (all public):
 
 ### Class AnalyticalHestonPricer</code>
 
-This is a subclass of the class HestonPricer described above. We based the implementation of this class using the exam 2021</2022about the pricing under the Heston model.
+This is a subclass of the class HestonPricer described above. We based the implementation of this class using the exam 2021</2022about the pricing under the Heston model. Unfortunaltely, in our case the price obtained by montecarlo doesn't converge to the one obtained with thi method <code> double price </code>.
 
 **Purpose of the class:**
 The task is to compute the price of a Call option using the analytical formula explained before (the which one with the integrals). 
